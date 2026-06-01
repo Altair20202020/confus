@@ -348,7 +348,19 @@ function approveUser(index) {
     requestsDB.splice(index, 1);
     localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
-    alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Acesso Liberado - Enterprise OS\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso foi APROVADA pelo administrador.\n\nSua senha temporária é: ${temporaryPassword}\n\nNo seu primeiro login, você será redirecionado para cadastrar sua senha definitiva.`);
+    // ================= DISPARO REAL COM EMAILJS =================
+    // ATENÇÃO: Substitua pelos IDs gerados no seu painel
+    emailjs.send("seu_service_id", "seu_template_id", {
+        to_email: req.email,               
+        username: req.username.toUpperCase(), 
+        senha_temporaria: temporaryPassword   
+    }).then(() => {
+        alert(`SISTEMA: Usuário aprovado e e-mail oficial enviado para ${req.email}`);
+    }).catch((error) => {
+        alert("SISTEMA: Erro crítico ao enviar e-mail real. Verifique o console.");
+        console.error("Erro EmailJS:", error);
+    });
+    // ============================================================
     
     renderAdminRequests();
 }
@@ -371,14 +383,12 @@ function denyUser(index) {
 
 // ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES E MODERAÇÃO) =================
 
-// Injeta os botões de Bloqueio e Exclusão dinamicamente no card de permissão se eles não existirem
 function injectAdminActionButtons() {
-    if (document.getElementById('btn-admin-block-user')) return; // Já injetado
+    if (document.getElementById('btn-admin-block-user')) return; 
 
     const containerSave = document.getElementById('btn-save-permissions');
     if (!containerSave) return;
 
-    // Criar container para botões extras estratégicos
     const wrapper = document.createElement('div');
     wrapper.style.display = "flex";
     wrapper.style.gap = "10px";
@@ -386,27 +396,22 @@ function injectAdminActionButtons() {
 
     const btnBlock = document.createElement('button');
     btnBlock.id = 'btn-admin-block-user';
-    btnBlock.className = 'btn-sys-primary';
+    btnBlock.className = 'btn-sys';
     btnBlock.style.backgroundColor = '#d35400';
+    btnBlock.style.color = '#fff';
     btnBlock.innerHTML = `<i class="fas fa-ban"></i> <span id="label-block-txt">Bloquear Usuário</span>`;
 
     const btnDelete = document.createElement('button');
     btnDelete.id = 'btn-admin-delete-user';
-    btnDelete.className = 'btn-sys-danger';
-    btnDelete.style.border = "none";
-    btnDelete.style.backgroundColor = 'var(--color-danger)';
-    btnDelete.style.color = 'white';
-    btnDelete.style.fontSize = "13px";
-    btnDelete.style.padding = "12px 20px";
+    btnDelete.className = 'btn-sys btn-sys-danger';
     btnDelete.innerHTML = `<i class="fas fa-user-slash"></i> Excluir Conta`;
 
     wrapper.appendChild(btnBlock);
     wrapper.appendChild(btnDelete);
 
-    // Insere os novos botões logo após o botão original de salvar permissões
     containerSave.parentNode.insertBefore(wrapper, containerSave.nextSibling);
 
-    // Evento de Bloquear/Desbloquear
+    // Evento de Bloquear / Desbloquear
     btnBlock.addEventListener('click', () => {
         if (!userBeingEdited) return;
         if (userBeingEdited === 'altair') {
@@ -414,13 +419,12 @@ function injectAdminActionButtons() {
             return;
         }
 
-        // Inverte estado de bloqueio
         const currentState = usersDB[userBeingEdited].isBlocked || false;
         usersDB[userBeingEdited].isBlocked = !currentState;
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
 
         if (usersDB[userBeingEdited].isBlocked) {
-            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi BLOQUEADO. Ele será deslogado ou impedido de acessar.`);
+            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi BLOQUEADO.`);
             btnBlock.style.backgroundColor = '#27ae60';
             document.getElementById('label-block-txt').innerText = "Desbloquear Usuário";
         } else {
@@ -457,12 +461,10 @@ btnSearchUser.addEventListener('click', () => {
         userBeingEdited = query;
         editingUserTitle.innerText = `EDITANDO_DIRETIVAS: ${query.toUpperCase()}`;
         
-        // Seta os checkboxes conforme o banco
         chkFinancas.checked = usersDB[query].permissions.financas;
         chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
         chkManutencao.checked = usersDB[query].permissions.manutencao;
         
-        // Ajusta o texto do botão de bloqueio de acordo com a situação atual dele
         const btnBlock = document.getElementById('btn-admin-block-user');
         if (btnBlock) {
             if (usersDB[query].isBlocked) {
@@ -485,12 +487,10 @@ btnSearchUser.addEventListener('click', () => {
 btnSavePermissions.addEventListener('click', () => {
     if (!userBeingEdited) return;
 
-    // Salva as permissões da tela no objeto
     usersDB[userBeingEdited].permissions.financas = chkFinancas.checked;
     usersDB[userBeingEdited].permissions.almoxarifado = chkAlmoxarifado.checked;
     usersDB[userBeingEdited].permissions.manutencao = chkManutencao.checked;
 
-    // Persiste no LocalStorage
     localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
     alert(`DIRETIVAS ATUALIZADAS: Permissões de ${userBeingEdited.toUpperCase()} aplicadas com sucesso.`);
     
