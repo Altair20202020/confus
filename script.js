@@ -17,8 +17,9 @@ let requestsDB = JSON.parse(localStorage.getItem('sys_requests_db'));
 let currentUser = sessionStorage.getItem('logged_user') || null;
 let currentActiveModule = null;
 let transactions = [];
-let stockItems = []; // Memória global do módulo almoxarifado
-let userPendingPasswordForce = null; // Controla temporariamente o usuário em troca de senha obrigatória
+let stockItems = []; 
+let stockLogs = []; // Banco de dados do log de auditoria
+let userPendingPasswordForce = null; 
 
 // Seleção de Telas Principais
 const screenLogin = document.getElementById('login-screen');
@@ -27,7 +28,7 @@ const screenForcePassword = document.getElementById('force-password-screen');
 const screenMenu = document.getElementById('menu-screen');
 const screenFinancas = document.getElementById('system-dashboard');
 const screenAdmin = document.getElementById('admin-panel');
-const screenAlmoxarifado = document.getElementById('system-almoxarifado'); // Nova Tela Vinculada
+const screenAlmoxarifado = document.getElementById('system-almoxarifado'); 
 
 // Elementos de Login
 const usernameInput = document.getElementById('login-username');
@@ -57,12 +58,16 @@ const btnSaveTransaction = document.getElementById('btn-save');
 const btnClearTransactions = document.getElementById('btn-clear');
 const listContainer = document.getElementById('list-container');
 
-// Elementos do Módulo Almoxarifado
+// Elementos do Módulo Almoxarifado Avançado
 const prodNameInput = document.getElementById('stock-prod-name');
 const prodQtyInput = document.getElementById('stock-prod-qty');
 const prodMinInput = document.getElementById('stock-prod-min');
+const prodCostInput = document.getElementById('stock-prod-cost');
 const btnSaveProduct = document.getElementById('btn-save-product');
 const stockTableBody = document.getElementById('stock-table-body');
+const stockSearchInput = document.getElementById('stock-search');
+const stockFilterSelect = document.getElementById('stock-filter');
+const auditLogContainer = document.getElementById('stock-audit-log');
 
 
 // ================= CORE DE SESSÃO E LOGIN =================
@@ -71,14 +76,10 @@ function handleLogin() {
     const password = passwordInput.value;
 
     if (usersDB[username] && usersDB[username].password === password) {
-        
-        // TRAVA DE SEGURANÇA: CONTA BLOQUEADA
         if (usersDB[username].isBlocked) {
             loginError.innerText = "SISTEMA: ESTA CONTA FOI SUSPENSA PELO ADMINISTRADOR.";
             return;
         }
-
-        // REGRA DO PRIMEIRO ACESSO (Bloqueia login se a senha for temporária)
         if (usersDB[username].isTemporary) {
             userPendingPasswordForce = username;
             showScreen(screenForcePassword);
@@ -104,7 +105,6 @@ function handleLogout() {
     showScreen(screenLogin);
 }
 
-// Alternador de Telas Universal
 function showScreen(screenTarget) {
     [screenLogin, screenRegister, screenForcePassword, screenMenu, screenFinancas, screenAdmin, screenAlmoxarifado].forEach(s => {
         if(s) s.classList.add('hidden');
@@ -112,7 +112,6 @@ function showScreen(screenTarget) {
     if(screenTarget) screenTarget.classList.remove('hidden');
 }
 
-// Configurar elementos de texto comuns de usuário logado nas headers
 function updateHeaderUsernames() {
     if (!currentUser) return;
     document.querySelectorAll('.user-placeholder-name').forEach(el => {
@@ -120,20 +119,17 @@ function updateHeaderUsernames() {
     });
 }
 
-// Renderiza o menu aplicando as travas de permissão
 function renderMenu() {
     updateHeaderUsernames();
     const userObj = usersDB[currentUser];
-
-    // Card do Admin
     const cardAdmin = document.getElementById('mod-admin');
+    
     if (userObj.isAdmin) {
         cardAdmin.classList.remove('hidden');
     } else {
         cardAdmin.classList.add('hidden');
     }
 
-    // Gerenciar avisos visuais de travas
     document.querySelectorAll('.module-card:not(.disabled):not(.admin-only)').forEach(card => {
         const moduleName = card.getAttribute('data-module');
         const hasAccess = userObj.permissions[moduleName];
@@ -155,22 +151,19 @@ function renderMenu() {
     });
 }
 
-// Clique nos Módulos
 document.querySelectorAll('.module-card').forEach(card => {
     card.addEventListener('click', () => {
         if (card.classList.contains('disabled')) return;
-        
         const moduleName = card.getAttribute('data-module');
         const userObj = usersDB[currentUser];
 
         if (moduleName === 'admin' && userObj.isAdmin) {
             showScreen(screenAdmin);
-            renderAdminRequests(); // Atualiza a lista de requisições pendentes
-            injectAdminActionButtons(); // Prepara área de botões extras caso não existam
+            renderAdminRequests();
+            injectAdminActionButtons();
             return;
         }
 
-        // Verifica permissão comum
         if (userObj.permissions[moduleName]) {
             if (moduleName === 'financas') {
                 currentActiveModule = 'financas';
@@ -182,12 +175,11 @@ document.querySelectorAll('.module-card').forEach(card => {
                 loadAlmoxarifadoData();
             }
         } else {
-            alert("ERRO_DE_SEGURANÇA: Você não possui diretivas de acesso a este módulo. Contate o Administrador.");
+            alert("ERRO_DE_SEGURANÇA: Você não possui diretivas de acesso. Contate o Administrador.");
         }
     });
 });
 
-// Botões de Voltar para o Menu Principal
 document.querySelectorAll('.btn-back').forEach(btn => {
     btn.addEventListener('click', () => {
         currentActiveModule = null;
@@ -196,37 +188,20 @@ document.querySelectorAll('.btn-back').forEach(btn => {
     });
 });
 
-// Registrar botões de Logoff globais
 document.querySelectorAll('.btn-trigger-logout').forEach(btn => {
     btn.addEventListener('click', handleLogout);
 });
 
-if (btnLogin) {
-    btnLogin.addEventListener('click', handleLogin);
-}
+if (btnLogin) btnLogin.addEventListener('click', handleLogin);
 
 
-// ================= FLUXO DE SOLICITAÇÃO E CADASTRO =================
-
-// Links de transição da interface de login/cadastro
+// ================= FLUXO DE SOLICITAÇÃO DE CADASTRO =================
 const linkGoRegister = document.getElementById('link-go-register');
 const linkBackLogin = document.getElementById('link-back-login');
 
-if (linkGoRegister) {
-    linkGoRegister.addEventListener('click', (e) => {
-        e.preventDefault();
-        showScreen(screenRegister);
-    });
-}
+if (linkGoRegister) linkGoRegister.addEventListener('click', (e) => { e.preventDefault(); showScreen(screenRegister); });
+if (linkBackLogin) linkBackLogin.addEventListener('click', (e) => { e.preventDefault(); showScreen(screenLogin); });
 
-if (linkBackLogin) {
-    linkBackLogin.addEventListener('click', (e) => {
-        e.preventDefault();
-        showScreen(screenLogin);
-    });
-}
-
-// Processamento do Envio de Solicitação
 const btnSendRequest = document.getElementById('btn-send-request');
 if (btnSendRequest) {
     btnSendRequest.addEventListener('click', () => {
@@ -240,94 +215,63 @@ if (btnSendRequest) {
             alert("SISTEMA: Preencha o nome de usuário e e-mail corporativo obrigatórios.");
             return;
         }
-
         if (usersDB[userReg]) {
-            alert("SISTEMA: Identidade rejeitada. Este usuário já se encontra registrado e ativo.");
+            alert("SISTEMA: Identidade rejeitada. Este usuário já existe.");
             return;
         }
 
-        // Cria apenas o registro na lista de requisições pendentes no LocalStorage
-        const newRequest = {
+        requestsDB.push({
             username: userReg,
             email: emailReg,
             permissions: { financas: reqFin, almoxarifado: reqAlm, manutencao: reqMan }
-        };
-
-        requestsDB.push(newRequest);
+        });
         localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
-        alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo para validação.");
-        
-        // Limpa o formulário
-        document.getElementById('reg-username').value = "";
-        document.getElementById('reg-email').value = "";
-        document.getElementById('reg-req-financas').checked = false;
-        document.getElementById('reg-req-almoxarifado').checked = false;
-        document.getElementById('reg-req-manutencao').checked = false;
-        
+        alert("SOLICITAÇÃO PROTOCOLADA!");
         showScreen(screenLogin);
     });
 }
 
-// Lógica de Redefinição Obrigatória de Senha
+// Redefinição de Senha
 const btnChangePasswordSubmit = document.getElementById('btn-change-password-submit');
 if (btnChangePasswordSubmit) {
     btnChangePasswordSubmit.addEventListener('click', () => {
         const newPass = document.getElementById('force-new-password').value;
         const confPass = document.getElementById('force-confirm-password').value;
 
-        if (!newPass) { alert("SISTEMA: Campo de nova senha inválido."); return; }
-        if (newPass !== confPass) { alert("SISTEMA: Erro de checagem. As senhas informadas não coincidem."); return; }
+        if (!newPass || newPass !== confPass) { alert("SISTEMA: As senhas informadas não coincidem."); return; }
 
-        // Atualiza a senha e remove o token de conta temporária
         usersDB[userPendingPasswordForce].password = newPass;
         usersDB[userPendingPasswordForce].isTemporary = false;
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
 
-        alert("DIRETIVAS ATUALIZADAS!\nSenha permanente configurada com sucesso. Inicializando ecossistema...");
-        
         currentUser = userPendingPasswordForce;
         sessionStorage.setItem('logged_user', currentUser);
         userPendingPasswordForce = null;
-        
-        document.getElementById('force-new-password').value = "";
-        document.getElementById('force-confirm-password').value = "";
-        
         showScreen(screenMenu);
         renderMenu();
     });
 }
 
 
-// ================= GESTÃO DE AGUARDO / ANÁLISE DO ADMIN =================
+// ================= SEÇÃO DE GERENCIAMENTO ADMIN =================
 function renderAdminRequests() {
     const container = document.getElementById('admin-requests-container');
     if (!container) return;
     container.innerHTML = "";
 
     if (requestsDB.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); font-size:13px;">[PROVISIONAMENTO]: Nenhuma solicitação pendente no banco de dados.</p>`;
+        container.innerHTML = `<p style="color: var(--text-secondary); font-size:13px;">[PROVISIONAMENTO]: Nenhuma solicitação pendente.</p>`;
         return;
     }
 
     requestsDB.forEach((req, index) => {
         const card = document.createElement('div');
         card.classList.add('request-card');
-        
-        const mods = [];
-        if (req.permissions.financas) mods.push("Finanças");
-        if (req.permissions.almoxarifado) mods.push("Almoxarifado");
-        if (req.permissions.manutencao) mods.push("Manutenção");
-
         card.innerHTML = `
-            <div class="request-card-header">
-                <strong>Operador: ${req.username.toUpperCase()}</strong>
-                <span style="color: var(--color-primary)">${req.email}</span>
-            </div>
-            <p style="font-size: 13px;"><strong>Módulos Pretendidos:</strong> ${mods.join(', ') || 'Nenhum'}</p>
+            <div class="request-card-header"><strong>Operador: ${req.username.toUpperCase()}</strong><span>${req.email}</span></div>
             <div class="request-actions">
-                <button class="btn-approve" data-idx="${index}"><i class="fas fa-check"></i> Aprovar Acesso</button>
-                <button class="btn-deny" data-idx="${index}"><i class="fas fa-times"></i> Rejeitar</button>
+                <button class="btn-approve" data-idx="${index}"><i class="fas fa-check"></i> Aprovar</button>
             </div>
         `;
         container.appendChild(card);
@@ -335,145 +279,53 @@ function renderAdminRequests() {
 
     container.querySelectorAll('.btn-approve').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            approveUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget);
+            const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+            const req = requestsDB[idx];
+            usersDB[req.username] = {
+                password: "123", // Padrão simples simulado
+                displayName: req.username.toUpperCase() + "_USER",
+                isAdmin: false, isTemporary: false, isBlocked: false, email: req.email,
+                permissions: { financas: req.permissions.financas, almoxarifado: req.permissions.almoxarifado, manutencao: req.permissions.manutencao }
+            };
+            localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+            requestsDB.splice(idx, 1);
+            localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+            renderAdminRequests();
         });
     });
-
-    container.querySelectorAll('.btn-deny').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            denyUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget);
-        });
-    });
 }
 
-function approveUser(index, targetButton) {
-    const req = requestsDB[index];
-    if (targetButton) {
-        targetButton.disabled = true;
-        targetButton.innerHTML = "Enviando e-mail...";
-    }
-
-    const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
-    usersDB[req.username] = {
-        password: temporaryPassword,
-        displayName: req.username.toUpperCase() + "_USER",
-        isAdmin: false,
-        isTemporary: true,
-        isBlocked: false,
-        email: req.email,
-        permissions: { financas: req.permissions.financas, almoxarifado: req.permissions.almoxarifado, manutencao: req.permissions.manutencao }
-    };
-
-    emailjs.send("default_service", "template_7ig858y", {
-        to_email: req.email,
-        username: req.username.toUpperCase(),
-        senha_temporaria: temporaryPassword
-    })
-    .then(() => {
-        localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-        requestsDB.splice(index, 1);
-        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-        alert(`SISTEMA: Usuário aprovado com sucesso! E-mail oficial enviado para: ${req.email}`);
-    })
-    .catch((error) => {
-        alert("SISTEMA: Erro crítico ao enviar e-mail real. Verifique as chaves e o console.");
-        console.error("Erro EmailJS:", error);
-    })
-    .finally(() => {
-        renderAdminRequests();
-    });
-}
-
-function denyUser(index, targetButton) {
-    const req = requestsDB[index];
-    const motive = prompt(`Informe o motivo técnico da recuperação para o operador ${req.username.toUpperCase()}:`);
-    if (motive === null) return;
-
-    const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
-
-    if (targetButton) {
-        targetButton.disabled = true;
-        targetButton.innerHTML = "Processando recusa...";
-    }
-
-    emailjs.send("default_service", "template_v5wk5hw", {
-        to_email: req.email,
-        username: req.username.toUpperCase(),
-        motivo: finalMotive
-    })
-    .then(() => {
-        requestsDB.splice(index, 1);
-        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-        alert(`SISTEMA: Notificação de recusa enviada com sucesso para: ${req.email}`);
-    })
-    .catch((error) => {
-        alert("SISTEMA: Erro crítico ao enviar e-mail de recusa. Verifique as chaves e o console.");
-        console.error("Erro EmailJS:", error);
-    })
-    .finally(() => {
-        renderAdminRequests();
-    });
-}
-
-// ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES E MODERAÇÃO) =================
 function injectAdminActionButtons() {
     if (document.getElementById('btn-admin-block-user')) return;
-
     const containerSave = document.getElementById('btn-save-permissions');
     if (!containerSave) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.style.display = "flex";
-    wrapper.style.gap = "10px";
-    wrapper.style.marginTop = "15px";
-
     const btnBlock = document.createElement('button');
     btnBlock.id = 'btn-admin-block-user';
-    btnBlock.className = 'btn-sys';
-    btnBlock.style.backgroundColor = '#d35400';
-    btnBlock.style.color = '#fff';
-    btnBlock.style.border = "none";
-    btnBlock.style.padding = "10px";
-    btnBlock.style.borderRadius = "4px";
-    btnBlock.style.cursor = "pointer";
-    btnBlock.style.fontSize = "12px";
-    btnBlock.style.fontWeight = "bold";
+    btnBlock.style.cssText = "background:#d35400; color:#fff; border:none; padding:10px; margin-top:10px; border-radius:4px; cursor:pointer; width:100%; font-weight:bold;";
     btnBlock.innerHTML = `<i class="fas fa-ban"></i> ALTERAR BLOQUEIO (ON/OFF)`;
-
-    containerSave.parentNode.insertBefore(wrapper, containerSave.nextSibling);
-    wrapper.appendChild(btnBlock);
+    containerSave.parentNode.insertBefore(btnBlock, containerSave.nextSibling);
 
     btnBlock.addEventListener('click', () => {
-        if (!userBeingEdited) return;
-        if (userBeingEdited === 'altair') {
-            alert("ERRO OPERACIONAL: Contas raiz master da arquitetura não admitem bloqueios de segurança.");
-            return;
-        }
-        const state = usersDB[userBeingEdited].isBlocked;
-        usersDB[userBeingEdited].isBlocked = !state;
+        if (!userBeingEdited || userBeingEdited === 'altair') return;
+        usersDB[userBeingEdited].isBlocked = !usersDB[userBeingEdited].isBlocked;
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-        alert(`STATUS MODIFICADO!\nO usuário ${userBeingEdited.toUpperCase()} agora está: ${!state ? 'BLOQUEADO' : 'ATIVO/LIBERADO'}.`);
+        alert("Status do usuário modificado!");
     });
 }
 
 if (btnSearchUser) {
     btnSearchUser.addEventListener('click', () => {
         const query = searchUserInput.value.trim().toLowerCase();
-        if (!query) return;
-
         if (usersDB[query]) {
             userBeingEdited = query;
-            editingUserTitle.innerText = `Editando Diretrizes de: ${query.toUpperCase()} (${usersDB[query].displayName})`;
-            
+            editingUserTitle.innerText = `Editando: ${query.toUpperCase()}`;
             chkFinancas.checked = usersDB[query].permissions.financas;
             chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
             chkManutencao.checked = usersDB[query].permissions.manutencao;
-
             permissionsCard.classList.remove('hidden');
         } else {
-            alert("SISTEMA: Usuário não localizado no banco de dados ativo.");
             permissionsCard.classList.add('hidden');
-            userBeingEdited = null;
         }
     });
 }
@@ -481,13 +333,11 @@ if (btnSearchUser) {
 if (btnSavePermissions) {
     btnSavePermissions.addEventListener('click', () => {
         if (!userBeingEdited) return;
-
         usersDB[userBeingEdited].permissions.financas = chkFinancas.checked;
         usersDB[userBeingEdited].permissions.almoxarifado = chkAlmoxarifado.checked;
         usersDB[userBeingEdited].permissions.manutencao = chkManutencao.checked;
-
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-        alert(`SUCESSO: As permissões do usuário ${userBeingEdited.toUpperCase()} foram atualizadas com sucesso!`);
+        alert("Permissões salvas!");
     });
 }
 
@@ -505,20 +355,13 @@ function saveFinancasData() {
 }
 
 function renderFinancas() {
-    updateHeaderUsernames();
     if (!listContainer) return;
     listContainer.innerHTML = "";
-
-    let ent = 0; let sai = 0;
+    let ent = 0, sai = 0;
 
     transactions.forEach((t) => {
         const item = document.createElement('div');
-        item.style.padding = "10px";
-        item.style.borderBottom = "1px solid #2d3748";
-        item.style.display = "flex";
-        item.style.justifyContent = "space-between";
-        item.style.fontSize = "13px";
-
+        item.style.cssText = "padding:10px; border-bottom:1px solid #2d3748; display:flex; justify-content:space-between; font-size:13px;";
         if (t.type === 'entrada') {
             ent += t.value;
             item.innerHTML = `<span>${t.title}</span> <span style="color:var(--color-success)">+ R$ ${t.value.toFixed(2)}</span>`;
@@ -533,12 +376,7 @@ function renderFinancas() {
     totalBalance.innerText = `R$ ${bal.toFixed(2)}`;
     totalEntries.innerText = `R$ ${ent.toFixed(2)}`;
     totalExpenses.innerText = `R$ ${sai.toFixed(2)}`;
-
-    if (bal >= 0) {
-        totalBalance.style.color = "var(--color-success)";
-    } else {
-        totalBalance.style.color = "var(--color-danger)";
-    }
+    totalBalance.style.color = bal >= 0 ? "var(--color-success)" : "var(--color-danger)";
 }
 
 if (btnSaveTransaction) {
@@ -546,11 +384,7 @@ if (btnSaveTransaction) {
         const title = transTitleInput.value.trim();
         const value = parseFloat(transValueInput.value);
         const type = transTypeSelect.value;
-
-        if (!title || isNaN(value) || value <= 0) {
-            alert('Por favor, preencha todos os campos financeiros corretamente.');
-            return;
-        }
+        if (!title || isNaN(value)) return;
 
         transactions.push({ title, value, type });
         transTitleInput.value = ''; transValueInput.value = '';
@@ -558,105 +392,154 @@ if (btnSaveTransaction) {
     });
 }
 
-if (btnClearTransactions) {
-    btnClearTransactions.addEventListener('click', () => {
-        if (confirm('Tem certeza que deseja apagar todo o histórico financeiro?')) {
-            transactions = [];
-            saveFinancasData();
-        }
-    });
-}
 
-
-// ================= MÓDULO ALMOXARIFADO =================
+// ================= MÓDULO ALMOXARIFADO AVANÇADO =================
 function loadAlmoxarifadoData() {
-    const savedStock = localStorage.getItem('sys_stock_items');
-    stockItems = savedStock ? JSON.parse(savedStock) : [];
+    stockItems = JSON.parse(localStorage.getItem('sys_stock_items')) || [];
+    stockLogs = JSON.parse(localStorage.getItem('sys_stock_logs')) || [];
     renderStockTable();
+    renderStockKPIs();
+    renderAuditLogs();
 }
 
 function saveAlmoxarifadoData() {
     localStorage.setItem('sys_stock_items', JSON.stringify(stockItems));
+    localStorage.setItem('sys_stock_logs', JSON.stringify(stockLogs));
     renderStockTable();
+    renderStockKPIs();
+    renderAuditLogs();
 }
 
-function renderStockTable() {
-    updateHeaderUsernames();
-    if (!stockTableBody) return;
-    stockTableBody.innerHTML = "";
+function addLog(action, message) {
+    const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    const operator = usersDB[currentUser]?.displayName || "SISTEMA";
+    stockLogs.unshift({ time, operator, action, message });
+    if(stockLogs.length > 30) stockLogs.pop(); // Limita tamanho da auditoria
+}
 
-    if (stockItems.length === 0) {
-        stockTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-secondary); padding:20px;">Nenhum material registrado em estoque.</td></tr>`;
+function renderStockKPIs() {
+    let totalItems = stockItems.length;
+    let valuation = stockItems.reduce((acc, curr) => acc + (curr.qty * curr.cost), 0);
+    let alerts = stockItems.filter(item => item.qty <= item.minQty).length;
+
+    document.getElementById('kpi-total-items').innerText = totalItems;
+    document.getElementById('kpi-total-valuation').innerText = `R$ ${valuation.toFixed(2)}`;
+    document.getElementById('kpi-critical-alerts').innerText = alerts;
+}
+
+function renderAuditLogs() {
+    if(!auditLogContainer) return;
+    auditLogContainer.innerHTML = "";
+    
+    if(stockLogs.length === 0) {
+        auditLogContainer.innerHTML = `<span style="color:var(--text-secondary)">Sem movimentações recentes.</span>`;
         return;
     }
 
-    stockItems.forEach((item, index) => {
+    stockLogs.forEach(log => {
+        const row = document.createElement('div');
+        row.style.cssText = "background: #1c1e2a; padding: 6px 10px; border-radius:4px; border-left: 2px solid #6c5ce7; margin-bottom:4px;";
+        row.innerHTML = `<strong>[${log.time}] ${log.operator}:</strong> ${log.message}`;
+        auditLogContainer.appendChild(row);
+    });
+}
+
+function renderStockTable() {
+    if (!stockTableBody) return;
+    stockTableBody.innerHTML = "";
+
+    const searchTerm = stockSearchInput.value.toLowerCase();
+    const filterType = stockFilterSelect.value;
+
+    const filteredItems = stockItems.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+        if (filterType === 'critical') return matchesSearch && (item.qty <= item.minQty);
+        if (filterType === 'zero') return matchesSearch && (item.qty === 0);
+        return matchesSearch;
+    });
+
+    if (filteredItems.length === 0) {
+        stockTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary); padding:20px;">Nenhum material localizado nos filtros.</td></tr>`;
+        return;
+    }
+
+    filteredItems.forEach((item) => {
+        // Encontra o index real no array global original
+        const originalIndex = stockItems.findIndex(i => i.name === item.name);
+        
         const tr = document.createElement('tr');
         const isCritical = item.qty <= item.minQty;
+        if (isCritical) tr.classList.add('stock-row-critical');
 
-        if (isCritical) {
-            tr.classList.add('stock-row-critical');
-        }
+        const totalCost = item.qty * item.cost;
 
         tr.innerHTML = `
             <td style="padding: 10px;"><strong>${item.name.toUpperCase()}</strong></td>
-            <td style="padding: 10px;">${item.qty} Unidades</td>
-            <td style="padding: 10px; color:#94a3b8;">${item.minQty} Unidades</td>
+            <td style="padding: 10px; text-align: center;">${item.qty} Un.</td>
+            <td style="padding: 10px; text-align: center; color:#94a3b8;">${item.minQty} Un.</td>
+            <td style="padding: 10px;">R$ ${item.cost.toFixed(2)}</td>
+            <td style="padding: 10px; font-weight:bold;">R$ ${totalCost.toFixed(2)}</td>
             <td style="padding: 10px; text-align: right;">
-                <button class="btn-stock-action" onclick="changeStockQty(${index}, 1)"><i class="fas fa-plus"></i></button>
-                <button class="btn-stock-action" onclick="changeStockQty(${index}, -1)"><i class="fas fa-minus"></i></button>
-                <button class="btn-stock-action btn-stock-danger" style="background:#451a1a; border-color:#7f1d1d;" onclick="deleteStockItem(${index})"><i class="fas fa-trash"></i></button>
+                <button class="btn-stock-action" onclick="changeStockQty(${originalIndex}, 1)" title="Entrada"><i class="fas fa-plus"></i></button>
+                <button class="btn-stock-action" onclick="changeStockQty(${originalIndex}, -1)" title="Baixa"><i class="fas fa-minus"></i></button>
+                <button class="btn-stock-action btn-stock-danger" style="background:#451a1a;" onclick="deleteStockItem(${originalIndex})" title="Remover"><i class="fas fa-trash"></i></button>
             </td>
         `;
         stockTableBody.appendChild(tr);
     });
 }
 
-function addStockItem() {
-    const name = prodNameInput.value.trim();
-    const qty = parseInt(prodQtyInput.value);
-    const minQty = parseInt(prodMinInput.value);
+if (btnSaveProduct) {
+    btnSaveProduct.addEventListener('click', () => {
+        const name = prodNameInput.value.trim();
+        const qty = parseInt(prodQtyInput.value) || 0;
+        const minQty = parseInt(prodMinInput.value) || 0;
+        const cost = parseFloat(prodCostInput.value) || 0;
 
-    if (!name || isNaN(qty) || isNaN(minQty) || qty < 0 || minQty < 0) {
-        alert('Por favor, insira as informações de inventário corretamente.');
-        return;
-    }
+        if (!name || qty < 0 || minQty < 0 || cost < 0) {
+            alert('Por favor, preencha as informações do produto corretamente.');
+            return;
+        }
 
-    // Validação contra duplicações
-    if (stockItems.some(i => i.name.toLowerCase() === name.toLowerCase())) {
-        alert('SISTEMA: Este material já existe. Utilize os botões de controle na tabela para ajustar o saldo.');
-        return;
-    }
+        if (stockItems.some(i => i.name.toLowerCase() === name.toLowerCase())) {
+            alert('Este material já está registrado.');
+            return;
+        }
 
-    stockItems.push({ name, qty, minQty });
-    prodNameInput.value = ''; prodQtyInput.value = ''; prodMinInput.value = '';
-    
-    saveAlmoxarifadoData();
+        stockItems.push({ name, qty, minQty, cost });
+        addLog("cadastro", `Cadastrou o produto "${name.toUpperCase()}" com estoque inicial de ${qty} unidades.`);
+        
+        prodNameInput.value = ''; prodQtyInput.value = ''; prodMinInput.value = ''; prodCostInput.value = '';
+        saveAlmoxarifadoData();
+    });
 }
 
-// Funções expostas globalmente (window) para responderem aos cliques em linhas da tabela de estoque
 window.changeStockQty = function(index, amount) {
     const targetItem = stockItems[index];
     if (amount < 0 && targetItem.qty + amount < 0) {
-        alert('ERRO OPERACIONAL: Saldo em estoque insuficiente para realizar esta baixa.');
+        alert('ERRO OPERACIONAL: Saldo em estoque insuficiente.');
         return;
     }
     targetItem.qty += amount;
+    const tipoAcao = amount > 0 ? "Entrada" : "Saída/Baixa";
+    addLog("movimentacao", `${tipoAcao} de 1 unidade efetuada para o item: "${targetItem.name.toUpperCase()}". Novo saldo: ${targetItem.qty}.`);
     saveAlmoxarifadoData();
 };
 
 window.deleteStockItem = function(index) {
-    if (confirm(`Tem certeza que deseja remover o produto "${stockItems[index].name.toUpperCase()}" do almoxarifado?`)) {
+    if (confirm(`Remover "${stockItems[index].name.toUpperCase()}" permanentemente?`)) {
+        addLog("remocao", `Removeu o item "${stockItems[index].name.toUpperCase()}" do almoxarifado.`);
         stockItems.splice(index, 1);
         saveAlmoxarifadoData();
     }
 };
 
-if (btnSaveProduct) {
-    btnSaveProduct.addEventListener('click', addStockItem);
-}
+// Eventos dos Filtros Dinâmicos
+if (stockSearchInput) stockSearchInput.addEventListener('input', renderStockTable);
+if (stockFilterSelect) stockFilterSelect.addEventListener('change', renderStockTable);
 
-// Inicializar aplicação caso usuário já esteja logado em sessão ativa na mesma aba
+
+// Inicializar aplicação caso usuário já esteja logado
 if (currentUser && usersDB[currentUser]) {
     showScreen(screenMenu);
     renderMenu();
