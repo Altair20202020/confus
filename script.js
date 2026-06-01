@@ -17,6 +17,7 @@ let requestsDB = JSON.parse(localStorage.getItem('sys_requests_db'));
 let currentUser = sessionStorage.getItem('logged_user') || null;
 let currentActiveModule = null;
 let transactions = [];
+let stockItems = []; // Memória global do módulo almoxarifado
 let userPendingPasswordForce = null; // Controla temporariamente o usuário em troca de senha obrigatória
 
 // Seleção de Telas Principais
@@ -26,6 +27,7 @@ const screenForcePassword = document.getElementById('force-password-screen');
 const screenMenu = document.getElementById('menu-screen');
 const screenFinancas = document.getElementById('system-dashboard');
 const screenAdmin = document.getElementById('admin-panel');
+const screenAlmoxarifado = document.getElementById('system-almoxarifado'); // Nova Tela Vinculada
 
 // Elementos de Login
 const usernameInput = document.getElementById('login-username');
@@ -54,6 +56,13 @@ const transTypeSelect = document.getElementById('trans-type');
 const btnSaveTransaction = document.getElementById('btn-save');
 const btnClearTransactions = document.getElementById('btn-clear');
 const listContainer = document.getElementById('list-container');
+
+// Elementos do Módulo Almoxarifado
+const prodNameInput = document.getElementById('stock-prod-name');
+const prodQtyInput = document.getElementById('stock-prod-qty');
+const prodMinInput = document.getElementById('stock-prod-min');
+const btnSaveProduct = document.getElementById('btn-save-product');
+const stockTableBody = document.getElementById('stock-table-body');
 
 
 // ================= CORE DE SESSÃO E LOGIN =================
@@ -97,7 +106,7 @@ function handleLogout() {
 
 // Alternador de Telas Universal
 function showScreen(screenTarget) {
-    [screenLogin, screenRegister, screenForcePassword, screenMenu, screenFinancas, screenAdmin].forEach(s => {
+    [screenLogin, screenRegister, screenForcePassword, screenMenu, screenFinancas, screenAdmin, screenAlmoxarifado].forEach(s => {
         if(s) s.classList.add('hidden');
     });
     if(screenTarget) screenTarget.classList.remove('hidden');
@@ -116,7 +125,7 @@ function renderMenu() {
     updateHeaderUsernames();
     const userObj = usersDB[currentUser];
 
-    // Card do Administrador
+    // Card do Admin
     const cardAdmin = document.getElementById('mod-admin');
     if (userObj.isAdmin) {
         cardAdmin.classList.remove('hidden');
@@ -167,6 +176,10 @@ document.querySelectorAll('.module-card').forEach(card => {
                 currentActiveModule = 'financas';
                 showScreen(screenFinancas);
                 loadFinancasData();
+            } else if (moduleName === 'almoxarifado') {
+                currentActiveModule = 'almoxarifado';
+                showScreen(screenAlmoxarifado);
+                loadAlmoxarifadoData();
             }
         } else {
             alert("ERRO_DE_SEGURANÇA: Você não possui diretivas de acesso a este módulo. Contate o Administrador.");
@@ -209,7 +222,7 @@ if (linkBackLogin) {
     });
 }
 
-// Processamento do Envio de Solicitação (CORRIGIDO: Sem envio de e-mail aqui)
+// Processamento do Envio de Solicitação
 const btnSendRequest = document.getElementById('btn-send-request');
 if (btnSendRequest) {
     btnSendRequest.addEventListener('click', () => {
@@ -316,7 +329,6 @@ function renderAdminRequests() {
         container.appendChild(card);
     });
 
-    // Mapeamento dos gatilhos dinâmicos de aprovação/rejeição (Passando o evento "e")
     container.querySelectorAll('.btn-approve').forEach(btn => {
         btn.addEventListener('click', (e) => { approveUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget); });
     });
@@ -325,11 +337,9 @@ function renderAdminRequests() {
     });
 }
 
-// O e-mail é disparado unicamente aqui, quando o Admin clica em Aprovar
 function approveUser(index, targetButton) {
     const req = requestsDB[index];
     
-    // Feedback visual seguro usando o botão capturado diretamente da lista
     if (targetButton) {
         targetButton.disabled = true;
         targetButton.innerHTML = "Enviando e-mail...";
@@ -337,7 +347,6 @@ function approveUser(index, targetButton) {
 
     const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Adiciona o usuário à árvore permanente com a flag de temporário ativada e bloqueio desativado
     usersDB[req.username] = {
         password: temporaryPassword,
         displayName: req.username.toUpperCase() + "_USER",
@@ -352,19 +361,17 @@ function approveUser(index, targetButton) {
         }
     };
 
-    // ================= DISPARO REAL COM EMAILJS (Apenas na aprovação) =================
     emailjs.send("default_service", "template_7ig858y", {
         to_email: req.email,              
         username: req.username.toUpperCase(), 
         senha_temporaria: temporaryPassword   
     })
     .then(() => {
-        // Altera o banco de dados local somente se o e-mail foi enviado com sucesso
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
         requestsDB.splice(index, 1);
         localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
         
-        alert(`SISTEMA: Usuário aprovado com sucesso! E-mail oficial com as credenciais enviado para: ${req.email}`);
+        alert(`SISTEMA: Usuário aprovado com sucesso! E-mail oficial enviado para: ${req.email}`);
     })
     .catch((error) => {
         alert("SISTEMA: Erro crítico ao enviar e-mail real. Verifique as chaves e o console.");
@@ -375,32 +382,27 @@ function approveUser(index, targetButton) {
     });
 }
 
-// CORRIGIDO: Modificado o seletor de botão para evitar erros de índice nulo no console
 function denyUser(index, targetButton) {
     const req = requestsDB[index];
     
     const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
-    if (motive === null) return; // Se o admin cancelar o prompt, interrompe a ação
+    if (motive === null) return; 
     
     const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
 
-    // Feedback visual seguro no botão que recebeu o clique
     if (targetButton) {
         targetButton.disabled = true;
         targetButton.innerHTML = "Processando recusa...";
     }
 
-    // ================= DISPARO REAL DE REJEIÇÃO COM EMAILJS =================
     emailjs.send("default_service", "template_v5wk5hw", {
         to_email: req.email,              
         username: req.username.toUpperCase(), 
         motivo: finalMotive   
     })
     .then(() => {
-        // Remove da lista pendente local apenas se o e-mail for enviado com sucesso
         requestsDB.splice(index, 1);
         localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-        
         alert(`SISTEMA: Notificação de recusa enviada com sucesso para: ${req.email}`);
     })
     .catch((error) => {
@@ -443,7 +445,6 @@ function injectAdminActionButtons() {
 
     containerSave.parentNode.insertBefore(wrapper, containerSave.nextSibling);
 
-    // Evento de Bloquear / Desbloquear
     btnBlock.addEventListener('click', () => {
         if (!userBeingEdited) return;
         if (userBeingEdited === 'altair') {
@@ -466,7 +467,6 @@ function injectAdminActionButtons() {
         }
     });
 
-    // Evento de Excluir permanentemente
     btnDelete.addEventListener('click', () => {
         if (!userBeingEdited) return;
         if (userBeingEdited === 'altair') {
@@ -474,7 +474,7 @@ function injectAdminActionButtons() {
             return;
         }
 
-        if (confirm(`⚠️ ALERTA DE EXCLUSÃO CRÍTICA ⚠️\n\nTem certeza de que deseja apagar o usuário ${userBeingEdited.toUpperCase()} permanentemente da base de dados? Esta ação é irreversível.`)) {
+        if (confirm(`⚠️ ALERTA DE EXCLUSÃO CRÍTICA ⚠️\n\nTem certeza de que deseja apagar o usuário ${userBeingEdited.toUpperCase()} permanentemente da base de dados?`)) {
             delete usersDB[userBeingEdited];
             localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
             
@@ -493,7 +493,8 @@ btnSearchUser.addEventListener('click', () => {
         userBeingEdited = query;
         editingUserTitle.innerText = `EDITANDO_DIRETIVAS: ${query.toUpperCase()}`;
         
-        chkFinancas.checked = usersDB[query].permissions.financianca || usersDB[query].permissions.financas;
+        // CORRIGIDO: Removido erro de digitação original "permissions.financianca"
+        chkFinancas.checked = usersDB[query].permissions.financas;
         chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
         chkManutencao.checked = usersDB[query].permissions.manutencao;
         
@@ -600,7 +601,6 @@ function saveFinancasData() {
     localStorage.setItem(storageKey, JSON.stringify(transactions));
 }
 
-// Eventos internos de Finanças e Auxiliares
 btnSaveTransaction.addEventListener('click', addTransaction);
 btnClearTransactions.addEventListener('click', () => {
     if (confirm('Deseja deletar permanentemente a tabela deste usuário?')) {
@@ -608,6 +608,101 @@ btnClearTransactions.addEventListener('click', () => {
     }
 });
 
+
+// ================= MÓDULO: ALMOXARIFADO (NOVA ENGINE DE ESTOQUE) =================
+function loadAlmoxarifadoData() {
+    const storageKey = `my_stock_data_${currentUser}`;
+    stockItems = JSON.parse(localStorage.getItem(storageKey)) || [];
+    renderStockTable();
+}
+
+function saveAlmoxarifadoData() {
+    const storageKey = `my_stock_data_${currentUser}`;
+    localStorage.setItem(storageKey, JSON.stringify(stockItems));
+}
+
+function renderStockTable() {
+    if (!stockTableBody) return;
+    stockTableBody.innerHTML = '';
+
+    if (stockItems.length === 0) {
+        stockTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; font-size:12px; padding:20px;">[ALMOXARIFADO_VAZIO]: NENHUM PRODUTO REGISTRADO</td></tr>`;
+        return;
+    }
+
+    stockItems.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        
+        // Ativa classe crítica caso estoque esteja em níveis iguais ou inferiores ao mínimo
+        if (item.qty <= item.minQty) {
+            tr.classList.add('stock-row-critical');
+        }
+
+        tr.innerHTML = `
+            <td><strong>#${index + 1}</strong></td>
+            <td>${item.name.toUpperCase()}</td>
+            <td>${item.qty} un</td>
+            <td>${item.minQty} un</td>
+            <td>
+                <button class="btn-stock-action" onclick="changeStockQty(${index}, 1)"><i class="fas fa-plus"></i> Entrada</button>
+                <button class="btn-stock-action" onclick="changeStockQty(${index}, -1)"><i class="fas fa-minus"></i> Baixa</button>
+                <button class="btn-stock-action btn-stock-danger" onclick="deleteStockItem(${index})"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        stockTableBody.appendChild(tr);
+    });
+}
+
+function addStockItem() {
+    const name = prodNameInput.value.trim();
+    const qty = parseInt(prodQtyInput.value);
+    const minQty = parseInt(prodMinInput.value);
+
+    if (!name || isNaN(qty) || qty < 0 || isNaN(minQty) || minQty < 0) {
+        alert('OPERAÇÃO RECUSADA: CERTIFIQUE-SE DE QUE OS VALORES SÃO VÁLIDOS E MAIORES OU IGUAIS A ZERO.');
+        return;
+    }
+
+    // Evita duplicações de nomes no estoque do mesmo operador
+    const existIndex = stockItems.findIndex(item => item.name.toLowerCase() === name.toLowerCase());
+    if (existIndex !== -1) {
+        alert('AVISO: Esse produto já existe. Utilize os botões de controle na tabela para ajustar o saldo.');
+        return;
+    }
+
+    stockItems.push({ name, qty, minQty });
+    prodNameInput.value = ''; prodQtyInput.value = ''; prodMinInput.value = '';
+    
+    saveAlmoxarifadoData();
+    renderStockTable();
+}
+
+// Funções expostas globalmente (window) para responderem aos cliques em linhas da tabela de estoque
+window.changeStockQty = function(index, amount) {
+    const targetItem = stockItems[index];
+    if (amount < 0 && targetItem.qty + amount < 0) {
+        alert('ERRO OPERACIONAL: Saldo em estoque insuficiente para realizar esta baixa.');
+        return;
+    }
+    targetItem.qty += amount;
+    saveAlmoxarifadoData();
+    renderStockTable();
+};
+
+window.deleteStockItem = function(index) {
+    if (confirm(`Tem certeza que deseja remover o produto "${stockItems[index].name.toUpperCase()}" do almoxarifado?`)) {
+        stockItems.splice(index, 1);
+        saveAlmoxarifadoData();
+        renderStockTable();
+    }
+};
+
+if (btnSaveProduct) {
+    btnSaveProduct.addEventListener('click', addStockItem);
+}
+
+
+// ================= CONTROLE GLOBAL DE LOGIN POR EVENTO =================
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 btnLogin.addEventListener('click', handleLogin);
 
