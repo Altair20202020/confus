@@ -29,7 +29,6 @@ body {
     display: flex;
     justify-content: center;
     padding: 20px;
-    padding-top: 20px;
 }
 
 .container, .menu-container {
@@ -54,7 +53,7 @@ body {
 .system-logo { font-size: 24px; color: var(--color-primary); }
 h1 { font-size: 18px; letter-spacing: 1px; }
 
-/* ================= NEW LAYOUT - TELA LOGIN SPLIT MODERN ================= */
+/* ================= LAYOUT - TELA LOGIN SPLIT MODERN ================= */
 #login-screen.login-split-container {
     display: flex;
     width: 100vw;
@@ -174,7 +173,6 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     transition: border-color 0.3s ease;
 }
 
-/* Texto que flutua */
 .modern-input-group label {
     position: absolute;
     left: 0;
@@ -187,7 +185,6 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     margin: 0;
 }
 
-/* Animação do input ativo/preenchido */
 .modern-input-group input:focus ~ label,
 .modern-input-group input:not(:placeholder-shown) ~ label {
     top: -14px;
@@ -339,6 +336,53 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     cursor: pointer;
 }
 
+/* --- MÓDULO: ALMOXARIFADO (ESTILOS DA TABELA E COMPONENTES) --- */
+.stock-table tbody tr {
+    border-bottom: 1px solid #1e2235;
+    transition: background 0.2s ease;
+}
+
+.stock-table tbody tr:hover {
+    background: #1e2235;
+}
+
+.stock-table td {
+    padding: 12px 10px;
+    color: #e2e8f0;
+}
+
+.stock-row-critical {
+    background: rgba(255, 71, 87, 0.08) !important;
+    border-left: 3px solid var(--color-danger);
+}
+
+.stock-row-critical td {
+    color: #ff8a95 !important;
+}
+
+.btn-stock-action {
+    background: #1e2230;
+    border: 1px solid #3b4260;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    margin-left: 4px;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.btn-stock-action:hover {
+    background: #312e81;
+    border-color: #6366f1;
+}
+
+.btn-stock-danger:hover {
+    background: #7f1d1d;
+    border-color: var(--color-danger);
+}
+
 /* --- ESTILOS DE SUPORTE --- */
 .sys-box { background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 8px; }
 .hidden { display: none !important; }
@@ -357,10 +401,12 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 .user-badge { font-size: 11px; background-color: var(--bg-input); padding: 6px 12px; border-radius: 4px; color: var(--color-success); border: 1px solid var(--border-color); }
 .btn-logout { background: transparent; border: none; color: var(--color-danger); cursor: pointer; font-weight: bold; }
 
-/* Herdando estilos do Dashboard anterior... */
+/* Dashboard Grid Component */
 .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-.balance-card { padding: 30px; }
-.balance-value { font-size: 42px; font-weight: 700; }
+.balance-card { padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-box); }
+.balance-value { font-size: 42px; font-weight: 700; margin-top: 10px; }
+.card-header { display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); }
+
 .mini-cards-wrapper { display: flex; flex-direction: column; gap: 15px; }
 .card { padding: 20px; display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 8px;}
 .card h3 { font-size: 12px; color: var(--text-secondary); }
@@ -369,10 +415,12 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 .saida p { color: var(--color-danger); }
 .icon-entries { color: var(--color-success); font-size: 24px; }
 .icon-expenses { color: var(--color-danger); font-size: 24px; }
+
 .control-panel { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
 .form-section .form-group { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .form-group label { font-size: 11px; color: var(--text-secondary); }
 .form-group input, .form-group select { padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px; outline: none;}
+
 .transaction-list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: rgba(255,255,255,0.02); border-radius: 4px; border-left: 3px solid transparent; cursor: pointer; }
 .item-left { display: flex; align-items: center; gap: 12px; }
@@ -382,30 +430,12 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 .transaction-item.completed { opacity: 0.3; }
 .transaction-item.completed .item-info { text-decoration: line-through; }
 .transaction-item.completed .check-box { background-color: var(--color-success); border-color: var(--color-success); }
+
 [class^="btn-sys-"] { padding: 12px 20px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-sys-primary { background-color: var(--color-primary); color: white; }
 .btn-sys-danger { background-color: transparent; color: var(--color-danger); border: 1px solid var(--color-danger); padding: 8px 15px; font-size: 11px; }
 
-/* ================= RESPONSIVIDADE E ADAPTAÇÕES ================= */
-@media (max-width: 968px) {
-    .login-branding-side {
-        display: none !important; /* Remove o painel da esquerda em telas mobile */
-    }
-    #login-screen.login-split-container {
-        position: relative;
-        background-color: #0a0b10;
-    }
-    .login-form-side {
-        width: 100%;
-        border-left: none;
-        padding: 30px 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    .system-header { flex-direction: column; gap: 10px; }
-    .dashboard-grid, .control-panel { grid-template-columns: 1fr; }
-    /* --- COMPLEMENTOS DE LINK E SOLICITAÇÕES --- */
+/* Componentes de Link e Formulários Extras */
 .login-extra-links {
     margin-top: 20px;
     text-align: center;
@@ -468,4 +498,24 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 }
 .btn-approve { background-color: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 .btn-deny { background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+
+/* ================= RESPONSIVIDADE E ADAPTAÇÕES ================= */
+@media (max-width: 968px) {
+    .login-branding-side {
+        display: none !important;
+    }
+    #login-screen.login-split-container {
+        position: relative;
+        background-color: #0a0b10;
+    }
+    .login-form-side {
+        width: 100%;
+        border-left: none;
+        padding: 30px 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .system-header { flex-direction: column; gap: 10px; }
+    .dashboard-grid, .control-panel { grid-template-columns: 1fr !important; }
 }
