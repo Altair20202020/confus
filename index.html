@@ -3,19 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance PRO - Dark System</title>
+    <title>Finance PRO - Secure Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
     <div class="main-wrapper">
-        <div class="container">
+        
+        <div class="login-container sys-box" id="login-screen">
+            <div class="box-header">
+                <h2><i class="fas fa-lock"></i> AUTH_REQUIRED (LOGIN)</h2>
+            </div>
+            <div class="form-group">
+                <p class="login-tip">Contas padrão:<br>• Usuário: <b>altair</b> / Senha: <b>123</b><br>• Usuário: <b>meli</b> / Senha: <b>456</b></p>
+                
+                <label>Usuário</label>
+                <input type="text" id="login-username" placeholder="Digite seu usuário">
+                
+                <label>Senha</label>
+                <input type="password" id="login-password" placeholder="••••••••">
+                
+                <button id="btn-login" class="btn-sys-primary">
+                    <i class="fas fa-sign-in-alt"></i> ACESSAR_SISTEMA
+                </button>
+                <p id="login-error" class="error-msg"></p>
+            </div>
+        </div>
+
+        <div class="container hidden" id="system-dashboard">
             <header class="system-header">
                 <div class="header-left">
                     <i class="fas fa-wallet system-logo"></i>
-                    <h1 id="app-title" contenteditable="true">FINANCE_PRO</h1>
+                    <h1 id="app-title">FINANCE_PRO</h1>
                 </div>
-                <p class="system-status">SYS_STATUS: <span class="status-ok">ONLINE</span></p>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user"></i> <span id="current-user-name">USER</span></span>
+                    <button class="btn-logout" id="btn-logout" title="Sair do Sistema">
+                        <i class="fas fa-power-off"></i> LOGOUT
+                    </button>
+                </div>
             </header>
 
             <section class="dashboard-grid">
