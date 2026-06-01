@@ -316,24 +316,23 @@ function renderAdminRequests() {
         container.appendChild(card);
     });
 
-    // Mapeamento dos gatilhos dinâmicos de aprovação/rejeição
+    // Mapeamento dos gatilhos dinâmicos de aprovação/rejeição (Passando o evento "e")
     container.querySelectorAll('.btn-approve').forEach(btn => {
-        btn.addEventListener('click', (e) => { approveUser(parseInt(e.currentTarget.getAttribute('data-idx'))); });
+        btn.addEventListener('click', (e) => { approveUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget); });
     });
     container.querySelectorAll('.btn-deny').forEach(btn => {
-        btn.addEventListener('click', (e) => { denyUser(parseInt(e.currentTarget.getAttribute('data-idx'))); });
+        btn.addEventListener('click', (e) => { denyUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget); });
     });
 }
 
 // O e-mail é disparado unicamente aqui, quando o Admin clica em Aprovar
-function approveUser(index) {
+function approveUser(index, targetButton) {
     const req = requestsDB[index];
-    const btnApprove = document.querySelectorAll('.btn-approve')[index];
     
-    // Feedback visual de carregamento no botão do Admin
-    if (btnApprove) {
-        btnApprove.disabled = true;
-        btnApprove.innerHTML = "Enviando e-mail...";
+    // Feedback visual seguro usando o botão capturado diretamente da lista
+    if (targetButton) {
+        targetButton.disabled = true;
+        targetButton.innerHTML = "Enviando e-mail...";
     }
 
     const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
@@ -376,20 +375,19 @@ function approveUser(index) {
     });
 }
 
-// CORRIGIDO: Agora efetua o disparo real do e-mail de rejeição via EmailJS
-function denyUser(index) {
+// CORRIGIDO: Modificado o seletor de botão para evitar erros de índice nulo no console
+function denyUser(index, targetButton) {
     const req = requestsDB[index];
-    const btnDeny = document.querySelectorAll('.btn-deny')[index];
     
     const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
     if (motive === null) return; // Se o admin cancelar o prompt, interrompe a ação
     
     const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
 
-    // Feedback visual de carregamento no botão do Admin
-    if (btnDeny) {
-        btnDeny.disabled = true;
-        btnDeny.innerHTML = "Processando recusa...";
+    // Feedback visual seguro no botão que recebeu o clique
+    if (targetButton) {
+        targetButton.disabled = true;
+        targetButton.innerHTML = "Processando recusa...";
     }
 
     // ================= DISPARO REAL DE REJEIÇÃO COM EMAILJS =================
