@@ -285,7 +285,10 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     color: var(--text-secondary);
 }
 
-.badge-admin { color: #f1c40f; border-color: #f1c40f; }
+.badge-admin {
+    color: #f1c40f;
+    border-color: #f1c40f;
+}
 
 /* --- ADMIN PANEL WORKSPACE --- */
 .admin-workspace {
@@ -329,7 +332,10 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     border-bottom: 1px solid var(--border-color);
 }
 
-.permission-row label { font-size: 13px; }
+.permission-row label {
+    font-size: 13px;
+}
+
 .permission-row input[type="checkbox"] {
     width: 20px;
     height: 20px;
@@ -384,94 +390,121 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 }
 
 /* --- ESTILOS DE SUPORTE --- */
-.sys-box { background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 8px; }
-.hidden { display: none !important; }
-.error-msg { color: var(--color-danger); font-size: 12px; font-weight: bold; margin-top: 8px; text-align: center; }
+.sys-box {
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.box-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.box-header h2 {
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+.error-msg {
+    color: var(--color-danger);
+    font-size: 12px;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.btn-sys-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.btn-sys-primary:hover {
+    background-color: var(--color-primary-hover);
+}
 
 .btn-back {
     background: transparent;
     border: 1px solid var(--border-color);
-    color: var(--text-primary);
+    color: var(--text-secondary);
     padding: 6px 12px;
-    cursor: pointer;
     border-radius: 4px;
-}
-.btn-back:hover { background-color: var(--bg-input); }
-
-.user-badge { font-size: 11px; background-color: var(--bg-input); padding: 6px 12px; border-radius: 4px; color: var(--color-success); border: 1px solid var(--border-color); }
-.btn-logout { background: transparent; border: none; color: var(--color-danger); cursor: pointer; font-weight: bold; }
-
-/* Dashboard Grid Component */
-.dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-.balance-card { padding: 30px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-box); }
-.balance-value { font-size: 42px; font-weight: 700; margin-top: 10px; }
-.card-header { display: flex; justify-content: space-between; align-items: center; color: var(--text-secondary); }
-
-.mini-cards-wrapper { display: flex; flex-direction: column; gap: 15px; }
-.card { padding: 20px; display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 8px;}
-.card h3 { font-size: 12px; color: var(--text-secondary); }
-.card p { font-size: 20px; font-weight: 700; }
-.entrada p { color: var(--color-success); }
-.saida p { color: var(--color-danger); }
-.icon-entries { color: var(--color-success); font-size: 24px; }
-.icon-expenses { color: var(--color-danger); font-size: 24px; }
-
-.control-panel { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
-.form-section .form-group { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.form-group label { font-size: 11px; color: var(--text-secondary); }
-.form-group input, .form-group select { padding: 12px; background-color: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px; outline: none;}
-
-.transaction-list { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-.transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background-color: rgba(255,255,255,0.02); border-radius: 4px; border-left: 3px solid transparent; cursor: pointer; }
-.item-left { display: flex; align-items: center; gap: 12px; }
-.check-box { width: 16px; height: 16px; border: 2px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 10px; }
-.item-entrada { border-left-color: var(--color-success); }
-.item-saida { border-left-color: var(--color-danger); }
-.transaction-item.completed { opacity: 0.3; }
-.transaction-item.completed .item-info { text-decoration: line-through; }
-.transaction-item.completed .check-box { background-color: var(--color-success); border-color: var(--color-success); }
-
-[class^="btn-sys-"] { padding: 12px 20px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.btn-sys-primary { background-color: var(--color-primary); color: white; }
-.btn-sys-danger { background-color: transparent; color: var(--color-danger); border: 1px solid var(--color-danger); padding: 8px 15px; font-size: 11px; }
-
-/* Componentes de Link e Formulários Extras */
-.login-extra-links {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 13px;
-    font-family: system-ui, -apple-system, sans-serif;
-}
-.login-extra-links a {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
-}
-.login-extra-links a:hover {
-    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
 }
 
+.btn-back:hover {
+    color: #fff;
+    border-color: var(--text-secondary);
+}
+
+.btn-logout {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Módulos na interface de Login */
 .modules-requested-box {
-    background-color: var(--bg-box);
+    background: var(--bg-box);
     border: 1px solid var(--border-color);
-    padding: 15px;
     border-radius: 6px;
+    padding: 15px;
     margin-bottom: 25px;
 }
+
 .modules-requested-box .box-title {
-    font-size: 12px;
-    color: var(--text-secondary);
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
     display: block;
-    margin-bottom: 10px;
 }
+
 .checkbox-option {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-bottom: 8px;
+}
+
+.checkbox-option label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.login-extra-links {
+    margin-top: 20px;
+    text-align: center;
     font-size: 13px;
 }
-.checkbox-option input { cursor: pointer; width: 16px; height: 16px; }
+
+.login-extra-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.login-extra-links a:hover {
+    text-decoration: underline;
+}
 
 /* Cards de Solicitação na tela do Administrador */
 .request-card {
@@ -497,25 +530,56 @@ h1 { font-size: 18px; letter-spacing: 1px; }
     margin-top: 5px;
 }
 .btn-approve { background-color: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+.btn-approve:hover { background-color: #27ae60; }
 .btn-deny { background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+.btn-deny:hover { background-color: #c0392b; }
 
-/* ================= RESPONSIVIDADE E ADAPTAÇÕES ================= */
-@media (max-width: 968px) {
-    .login-branding-side {
-        display: none !important;
-    }
-    #login-screen.login-split-container {
-        position: relative;
-        background-color: #0a0b10;
-    }
-    .login-form-side {
-        width: 100%;
-        border-left: none;
-        padding: 30px 20px;
-    }
+/* Dashboard Finanças */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
 }
-
-@media (max-width: 768px) {
-    .system-header { flex-direction: column; gap: 10px; }
-    .dashboard-grid, .control-panel { grid-template-columns: 1fr !important; }
+.balance-card {
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
 }
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+.balance-value {
+    font-size: 32px;
+    font-weight: bold;
+    margin-top: 15px;
+}
+.mini-cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.mini-cards-wrapper .card {
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.card-info h3 {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.card-info p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+.icon-entries { color: var(--color-success); font-size: 20px; }
+.icon-expenses { color: var(--color-danger); font-size: 20px; }
