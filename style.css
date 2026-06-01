@@ -1,0 +1,41 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 20px;
+}
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+.cards {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+.card {
+    flex: 1;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.entrada h3 { color: #2ecc71; }
+.saida h3 { color: #e74c3c; }
+.btn-add {
+    width: 100%;
+    padding: 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* O TRUQUE PARA CELULAR: Se a tela for pequena, os cards ficam um embaixo do outro */
+@media (max-width: 480px) {
+    .cards {
+        flex-direction: column;
+    }
+}
