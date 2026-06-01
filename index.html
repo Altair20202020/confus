@@ -9,13 +9,13 @@
 <body>
     <div class="container">
         <header>
-            <h1>Minhas Finanças 💰</h1>
-            <p class="welcome">Organize seu dinheiro em tempo real</p>
+            <h1 id="app-title" contenteditable="true" title="Clique para mudar o título">Minhas Finanças 💰</h1>
+            <p class="welcome">Toque no título acima para personalizar o nome</p>
         </header>
 
         <div class="balance-card">
             <h3>Saldo Atual</h3>
-            <p class="balance-value">R$ 0,00</p>
+            <p class="balance-value" id="total-balance">R$ 0,00</p>
         </div>
         
         <div class="cards-grid">
@@ -23,38 +23,41 @@
                 <div class="card-icon">🔼</div>
                 <div>
                     <h3>Entradas</h3>
-                    <p>R$ 0,00</p>
+                    <p id="total-entries">R$ 0,00</p>
                 </div>
             </div>
             <div class="card saida">
                 <div class="card-icon">🔽</div>
                 <div>
-                    <h3>Saídas</h3>
-                    <p>R$ 0,00</p>
+                    <h3>Saídas/Dívidas</h3>
+                    <p id="total-expenses">R$ 0,00</p>
                 </div>
             </div>
         </div>
 
-        <section class="history-section">
-            <div class="section-header">
-                <h2>Últimos Registros</h2>
-                <span class="see-all">Ver tudo</span>
-            </div>
-            <div class="transaction-list">
-                <div class="transaction-item item-entrada">
-                    <span class="info">Salário Meli</span>
-                    <span class="value">+ R$ 3.500,00</span>
-                </div>
-                <div class="transaction-item item-saida">
-                    <span class="info">Aluguel da Moto</span>
-                    <span class="value">- R$ 150,00</span>
-                </div>
+        <section class="form-section">
+            <h2>Novo Registro</h2>
+            <div class="form-group">
+                <input type="text" id="trans-title" placeholder="Ex: Salário, Parcela Moto, Mercado">
+                <input type="number" id="trans-value" placeholder="Valor (R$)">
+                <select id="trans-type">
+                    <option value="entrada">Entrada (+)</option>
+                    <option value="saida">Dívida / Gasto (-)</option>
+                </select>
+                <button id="btn-save" class="btn-add">Adicionar</button>
             </div>
         </section>
 
-        <button class="btn-add">
-            <span>+</span> Novo Registro
-        </button>
+        <section class="history-section">
+            <div class="section-header">
+                <h2>Suas Contas e Dívidas</h2>
+                <span class="clear-all" id="btn-clear" title="Apagar tudo e recomeçar">Resetar</span>
+            </div>
+            <div class="transaction-list" id="list-container">
+                </div>
+        </section>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
