@@ -1,7 +1,7 @@
 // --- DATABASE DE USUÁRIOS E PERMISSÕES (Simulação LocalStorage) ---
 const INITIAL_USERS = {
-    "altair": { password: "123", displayName: "ALTAIR_ADMIN", isAdmin: true, isTemporary: false, email: "altair@empresa.com", permissions: { financas: true, almoxarifado: true, manutencao: true } },
-    "meli": { password: "456", displayName: "MELI_USER", isAdmin: false, isTemporary: false, email: "meli@empresa.com", permissions: { financas: true, almoxarifado: false, manutencao: false } }
+    "altair": { password: "123", displayName: "ALTAIR_ADMIN", isAdmin: true, isTemporary: false, isBlocked: false, email: "altair@empresa.com", permissions: { financas: true, almoxarifado: true, manutencao: true } },
+    "meli": { password: "456", displayName: "MELI_USER", isAdmin: false, isTemporary: false, isBlocked: false, email: "meli@empresa.com", permissions: { financas: true, almoxarifado: false, manutencao: false } }
 };
 
 // Inicialização dos Bancos de Dados no LocalStorage
@@ -63,6 +63,12 @@ function handleLogin() {
 
     if (usersDB[username] && usersDB[username].password === password) {
         
+        // TRAVA DE SEGURANÇA: CONTA BLOQUEADA
+        if (usersDB[username].isBlocked) {
+            loginError.innerText = "SISTEMA: ESTA CONTA FOI SUSPENSA PELO ADMINISTRADOR.";
+            return;
+        }
+
         // REGRA DO PRIMEIRO ACESSO (Bloqueia login se a senha for temporária)
         if (usersDB[username].isTemporary) {
             userPendingPasswordForce = username;
@@ -151,6 +157,7 @@ document.querySelectorAll('.module-card').forEach(card => {
         if (moduleName === 'admin' && userObj.isAdmin) {
             showScreen(screenAdmin);
             renderAdminRequests(); // Atualiza a lista de requisições pendentes
+            injectAdminActionButtons(); // Prepara área de botões extras caso não existam
             return;
         }
 
@@ -320,15 +327,15 @@ function renderAdminRequests() {
 
 function approveUser(index) {
     const req = requestsDB[index];
-    // Gera token de 6 dígitos numéricos aleatórios para a credencial provisória
     const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Adiciona o usuário à árvore permanente com a flag de temporário ativada
+    // Adiciona o usuário à árvore permanente com a flag de temporário ativada e bloqueio desativado
     usersDB[req.username] = {
         password: temporaryPassword,
         displayName: req.username.toUpperCase() + "_USER",
         isAdmin: false,
         isTemporary: true,
+        isBlocked: false,
         email: req.email,
         permissions: { 
             financas: req.permissions.financas, 
@@ -338,10 +345,9 @@ function approveUser(index) {
     };
 
     localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-    requestsDB.splice(index, 1); // Remove da fila analítica
+    requestsDB.splice(index, 1);
     localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
-    // Despacho simulado de e-mail de provisionamento
     alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Acesso Liberado - Enterprise OS\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso foi APROVADA pelo administrador.\n\nSua senha temporária é: ${temporaryPassword}\n\nNo seu primeiro login, você será redirecionado para cadastrar sua senha definitiva.`);
     
     renderAdminRequests();
@@ -351,20 +357,99 @@ function denyUser(index) {
     const req = requestsDB[index];
     const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
     
-    if (motive === null) return; // Cancela operação se o admin fechar a caixa
+    if (motive === null) return;
     const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
 
     requestsDB.splice(index, 1);
     localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
-    // Despacho simulado de e-mail de barreira técnica
     alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Solicitação de Acesso Negada\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso ao Enterprise OS foi REJEITADA.\n\nMotivo da Administração:\n"${finalMotive}"`);
 
     renderAdminRequests();
 }
 
 
-// ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES) =================
+// ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES E MODERAÇÃO) =================
+
+// Injeta os botões de Bloqueio e Exclusão dinamicamente no card de permissão se eles não existirem
+function injectAdminActionButtons() {
+    if (document.getElementById('btn-admin-block-user')) return; // Já injetado
+
+    const containerSave = document.getElementById('btn-save-permissions');
+    if (!containerSave) return;
+
+    // Criar container para botões extras estratégicos
+    const wrapper = document.createElement('div');
+    wrapper.style.display = "flex";
+    wrapper.style.gap = "10px";
+    wrapper.style.marginTop = "15px";
+
+    const btnBlock = document.createElement('button');
+    btnBlock.id = 'btn-admin-block-user';
+    btnBlock.className = 'btn-sys-primary';
+    btnBlock.style.backgroundColor = '#d35400';
+    btnBlock.innerHTML = `<i class="fas fa-ban"></i> <span id="label-block-txt">Bloquear Usuário</span>`;
+
+    const btnDelete = document.createElement('button');
+    btnDelete.id = 'btn-admin-delete-user';
+    btnDelete.className = 'btn-sys-danger';
+    btnDelete.style.border = "none";
+    btnDelete.style.backgroundColor = 'var(--color-danger)';
+    btnDelete.style.color = 'white';
+    btnDelete.style.fontSize = "13px";
+    btnDelete.style.padding = "12px 20px";
+    btnDelete.innerHTML = `<i class="fas fa-user-slash"></i> Excluir Conta`;
+
+    wrapper.appendChild(btnBlock);
+    wrapper.appendChild(btnDelete);
+
+    // Insere os novos botões logo após o botão original de salvar permissões
+    containerSave.parentNode.insertBefore(wrapper, containerSave.nextSibling);
+
+    // Evento de Bloquear/Desbloquear
+    btnBlock.addEventListener('click', () => {
+        if (!userBeingEdited) return;
+        if (userBeingEdited === 'altair') {
+            alert("ERRO: O usuário mestre administrador root (altair) não pode ser bloqueado.");
+            return;
+        }
+
+        // Inverte estado de bloqueio
+        const currentState = usersDB[userBeingEdited].isBlocked || false;
+        usersDB[userBeingEdited].isBlocked = !currentState;
+        localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+
+        if (usersDB[userBeingEdited].isBlocked) {
+            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi BLOQUEADO. Ele será deslogado ou impedido de acessar.`);
+            btnBlock.style.backgroundColor = '#27ae60';
+            document.getElementById('label-block-txt').innerText = "Desbloquear Usuário";
+        } else {
+            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi DESBLOQUEADO.`);
+            btnBlock.style.backgroundColor = '#d35400';
+            document.getElementById('label-block-txt').innerText = "Bloquear Usuário";
+        }
+    });
+
+    // Evento de Excluir permanentemente
+    btnDelete.addEventListener('click', () => {
+        if (!userBeingEdited) return;
+        if (userBeingEdited === 'altair') {
+            alert("ERRO: O administrador root master (altair) não pode ser removido.");
+            return;
+        }
+
+        if (confirm(`⚠️ ALERTA DE EXCLUSÃO CRÍTICA ⚠️\n\nTem certeza de que deseja apagar o usuário ${userBeingEdited.toUpperCase()} permanentemente da base de dados? Esta ação é irreversível.`)) {
+            delete usersDB[userBeingEdited];
+            localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+            
+            alert("SISTEMA: Registro eliminado com sucesso da árvore do diretório.");
+            permissionsCard.classList.add('hidden');
+            searchUserInput.value = "";
+            userBeingEdited = null;
+        }
+    });
+}
+
 btnSearchUser.addEventListener('click', () => {
     const query = searchUserInput.value.trim().toLowerCase();
     
@@ -377,6 +462,18 @@ btnSearchUser.addEventListener('click', () => {
         chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
         chkManutencao.checked = usersDB[query].permissions.manutencao;
         
+        // Ajusta o texto do botão de bloqueio de acordo com a situação atual dele
+        const btnBlock = document.getElementById('btn-admin-block-user');
+        if (btnBlock) {
+            if (usersDB[query].isBlocked) {
+                btnBlock.style.backgroundColor = '#27ae60';
+                document.getElementById('label-block-txt').innerText = "Desbloquear Usuário";
+            } else {
+                btnBlock.style.backgroundColor = '#d35400';
+                document.getElementById('label-block-txt').innerText = "Bloquear Usuário";
+            }
+        }
+
         permissionsCard.classList.remove('hidden');
     } else {
         alert("SISTEMA: Usuário não localizado na árvore de diretórios.");
