@@ -209,7 +209,7 @@ if (linkBackLogin) {
     });
 }
 
-// Processamento do Envio de Solicitação (Modificado com Integração EmailJS)
+// Processamento do Envio de Solicitação (CORRIGIDO: Sem envio de e-mail aqui)
 const btnSendRequest = document.getElementById('btn-send-request');
 if (btnSendRequest) {
     btnSendRequest.addEventListener('click', () => {
@@ -229,56 +229,26 @@ if (btnSendRequest) {
             return;
         }
 
-        // Mapeia quais módulos foram selecionados para enviar no corpo do e-mail
-        let modulosLista = [];
-        if (reqFin) modulosLista.push("Finanças");
-        if (reqAlm) modulosLista.push("Almoxarifado");
-        if (reqMan) modulosLista.push("Manutenção");
-        const modulosTexto = modulosLista.length > 0 ? modulosLista.join(", ") : "Nenhum";
-
-        // Cria o registro na árvore temporária de requisições local
+        // Cria apenas o registro na lista de requisições pendentes no LocalStorage
         const newRequest = {
             username: userReg,
             email: emailReg,
             permissions: { financas: reqFin, almoxarifado: reqAlm, manutencao: reqMan }
         };
 
-        // Altera texto do botão para dar feedback visual de carregamento
-        const btnSpan = btnSendRequest.querySelector('span');
-        const txtOriginal = btnSpan.innerText;
-        btnSpan.innerText = "Processando Envio...";
-        btnSendRequest.disabled = true;
+        requestsDB.push(newRequest);
+        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
-        // Dispara notificação via EmailJS usando seu template correspondente
-        emailjs.send("default_service", "template_7ig858y", {
-            username: userReg.toUpperCase(),
-            email: emailReg,
-            modules: modulosTexto
-        })
-        .then(() => {
-            // Salva na lista pendente se o e-mail for enviado com sucesso
-            requestsDB.push(newRequest);
-            localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-
-            alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo via e-mail corporativo.");
-            
-            // Limpa o formulário
-            document.getElementById('reg-username').value = "";
-            document.getElementById('reg-email').value = "";
-            document.getElementById('reg-req-financas').checked = false;
-            document.getElementById('reg-req-almoxarifado').checked = false;
-            document.getElementById('reg-req-manutencao').checked = false;
-            
-            showScreen(screenLogin);
-        })
-        .catch((err) => {
-            alert("SISTEMA: Falha de conexão com os servidores do gateway de e-mail. Tente novamente.");
-            console.error("Erro EmailJS:", err);
-        })
-        .finally(() => {
-            btnSpan.innerText = txtOriginal;
-            btnSendRequest.disabled = false;
-        });
+        alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo para validação.");
+        
+        // Limpa o formulário
+        document.getElementById('reg-username').value = "";
+        document.getElementById('reg-email').value = "";
+        document.getElementById('reg-req-financas').checked = false;
+        document.getElementById('reg-req-almoxarifado').checked = false;
+        document.getElementById('reg-req-manutencao').checked = false;
+        
+        showScreen(screenLogin);
     });
 }
 
@@ -355,8 +325,17 @@ function renderAdminRequests() {
     });
 }
 
+// CORRIGIDO: O e-mail agora é disparado unicamente aqui, quando o Admin clica em Aprovar
 function approveUser(index) {
     const req = requestsDB[index];
+    const btnApprove = document.querySelectorAll('.btn-approve')[index];
+    
+    // Feedback visual de carregamento no botão do Admin
+    if (btnApprove) {
+        btnApprove.disabled = true;
+        btnApprove.innerHTML = "Enviando e-mail...";
+    }
+
     const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Adiciona o usuário à árvore permanente com a flag de temporário ativada e bloqueio desativado
@@ -374,24 +353,27 @@ function approveUser(index) {
         }
     };
 
-    localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-    requestsDB.splice(index, 1);
-    localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-
-    // ================= DISPARO REAL COM EMAILJS =================
+    // ================= DISPARO REAL COM EMAILJS (Apenas na aprovação) =================
     emailjs.send("default_service", "template_7ig858y", {
         to_email: req.email,              
         username: req.username.toUpperCase(), 
         senha_temporaria: temporaryPassword   
-    }).then(() => {
-        alert(`SISTEMA: Usuário aprovado e e-mail oficial enviado para ${req.email}`);
-    }).catch((error) => {
-        alert("SISTEMA: Erro crítico ao enviar e-mail real. Verifique o console.");
+    })
+    .then(() => {
+        // Altera o banco de dados local somente se o e-mail foi enviado com sucesso
+        localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+        requestsDB.splice(index, 1);
+        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+        
+        alert(`SISTEMA: Usuário aprovado com sucesso! E-mail oficial com as credenciais enviado para: ${req.email}`);
+    })
+    .catch((error) => {
+        alert("SISTEMA: Erro crítico ao enviar e-mail real. Verifique as chaves e o console.");
         console.error("Erro EmailJS:", error);
+    })
+    .finally(() => {
+        renderAdminRequests();
     });
-    // ============================================================
-    
-    renderAdminRequests();
 }
 
 function denyUser(index) {
@@ -536,9 +518,8 @@ function loadFinancasData() {
     renderList();
 }
 
-function formatCurrency(value) {
-    return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
+// ... (Restante das funções originais mantidas de forma idêntica)
+function formatCurrency(value) { return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
 function updateBalances() {
     let entries = 0, expenses = 0;
@@ -577,9 +558,7 @@ function renderList() {
 
 function toggleComplete(index) {
     transactions[index].completed = !transactions[index].completed;
-    saveFinancasData();
-    updateBalances();
-    renderList();
+    saveFinancasData(); updateBalances(); renderList();
 }
 
 function addTransaction() {
@@ -601,7 +580,7 @@ function saveFinancasData() {
     localStorage.setItem(storageKey, JSON.stringify(transactions));
 }
 
-// Eventos internos de Finanças
+// Eventos internos de Finanças e Auxiliares
 btnSaveTransaction.addEventListener('click', addTransaction);
 btnClearTransactions.addEventListener('click', () => {
     if (confirm('Deseja deletar permanentemente a tabela deste usuário?')) {
@@ -609,14 +588,12 @@ btnClearTransactions.addEventListener('click', () => {
     }
 });
 
-// Eventos de teclas auxiliares
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 btnLogin.addEventListener('click', handleLogin);
 
 // Inicialização do Sistema do Gate de segurança
 if (currentUser) {
-    showScreen(screenMenu);
-    renderMenu();
+    showScreen(screenMenu); renderMenu();
 } else {
     showScreen(screenLogin);
 }
