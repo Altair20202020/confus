@@ -10,21 +10,39 @@
 <body class="dark-theme">
     <div class="main-wrapper">
         
-        <div class="login-container sys-box" id="login-screen">
-            <div class="box-header">
-                <h2><i class="fas fa-lock"></i> SYSTEM_AUTH_GATEWAY</h2>
-            </div>
-            <div class="form-group">
-                <label>Usuário</label>
-                <input type="text" id="login-username" placeholder="Usuário (Ex: altair, meli)">
-                
-                <label>Senha</label>
-                <input type="password" id="login-password" placeholder="••••••••">
-                
-                <button id="btn-login" class="btn-sys-primary">
-                    <i class="fas fa-sign-in-alt"></i> AUTENTICAR
-                </button>
-                <p id="login-error" class="error-msg"></p>
+        <div class="login-wrapper-central" id="login-screen">
+            <div class="login-card sys-box">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h2>SECURE_OS // GATEWAY</h2>
+                    <p>Insira suas credenciais de criptografia para acessar a rede</p>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-terminal"></i> DIRETÓRIO / USUÁRIO</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user-shield input-icon"></i>
+                        <input type="text" id="login-username" placeholder="Identificador do operador">
+                    </div>
+                    
+                    <label><i class="fas fa-key"></i> CHAVE DE ACESSO / SENHA</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input type="password" id="login-password" placeholder="••••••••">
+                    </div>
+                    
+                    <button id="btn-login" class="btn-sys-primary btn-login-glow">
+                        <i class="fas fa-sign-in-alt"></i> INICIAR SESSÃO CRIPTOGRAFADA
+                    </button>
+                    
+                    <p id="login-error" class="error-msg"></p>
+                </div>
+
+                <div class="login-footer">
+                    <span><i class="fas fa-network-wired"></i> PROTOCOLO: HTTPS/AES-256</span>
+                </div>
             </div>
         </div>
 
