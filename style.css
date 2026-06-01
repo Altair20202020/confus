@@ -420,4 +420,3 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 ::-webkit-scrollbar-track { background: var(--bg-main); }
 ::-webkit-scrollbar-thumb { background: #2d3748; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
-
