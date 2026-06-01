@@ -1,21 +1,28 @@
 // --- DATABASE DE USUÁRIOS E PERMISSÕES (Simulação LocalStorage) ---
 const INITIAL_USERS = {
-    "altair": { password: "123", displayName: "ALTAIR_ADMIN", isAdmin: true, permissions: { financas: true, almoxarifado: true, manutencao: true } },
-    "meli": { password: "456", displayName: "MELI_USER", isAdmin: false, permissions: { financas: true, almoxarifado: false, manutencao: false } }
+    "altair": { password: "123", displayName: "ALTAIR_ADMIN", isAdmin: true, isTemporary: false, email: "altair@empresa.com", permissions: { financas: true, almoxarifado: true, manutencao: true } },
+    "meli": { password: "456", displayName: "MELI_USER", isAdmin: false, isTemporary: false, email: "meli@empresa.com", permissions: { financas: true, almoxarifado: false, manutencao: false } }
 };
 
-// Se não houver banco de usuários salvo, cria o padrão
+// Inicialização dos Bancos de Dados no LocalStorage
 if (!localStorage.getItem('sys_users_db')) {
     localStorage.setItem('sys_users_db', JSON.stringify(INITIAL_USERS));
 }
+if (!localStorage.getItem('sys_requests_db')) {
+    localStorage.setItem('sys_requests_db', JSON.stringify([]));
+}
 
 let usersDB = JSON.parse(localStorage.getItem('sys_users_db'));
+let requestsDB = JSON.parse(localStorage.getItem('sys_requests_db'));
 let currentUser = sessionStorage.getItem('logged_user') || null;
 let currentActiveModule = null;
 let transactions = [];
+let userPendingPasswordForce = null; // Controla temporariamente o usuário em troca de senha obrigatória
 
 // Seleção de Telas Principais
 const screenLogin = document.getElementById('login-screen');
+const screenRegister = document.getElementById('register-screen');
+const screenForcePassword = document.getElementById('force-password-screen');
 const screenMenu = document.getElementById('menu-screen');
 const screenFinancas = document.getElementById('system-dashboard');
 const screenAdmin = document.getElementById('admin-panel');
@@ -55,6 +62,14 @@ function handleLogin() {
     const password = passwordInput.value;
 
     if (usersDB[username] && usersDB[username].password === password) {
+        
+        // REGRA DO PRIMEIRO ACESSO (Bloqueia login se a senha for temporária)
+        if (usersDB[username].isTemporary) {
+            userPendingPasswordForce = username;
+            showScreen(screenForcePassword);
+            return;
+        }
+
         currentUser = username;
         sessionStorage.setItem('logged_user', username);
         loginError.innerText = "";
@@ -76,8 +91,10 @@ function handleLogout() {
 
 // Alternador de Telas Universal
 function showScreen(screenTarget) {
-    [screenLogin, screenMenu, screenFinancas, screenAdmin].forEach(s => s.classList.add('hidden'));
-    screenTarget.classList.remove('hidden');
+    [screenLogin, screenRegister, screenForcePassword, screenMenu, screenFinancas, screenAdmin].forEach(s => {
+        if(s) s.classList.add('hidden');
+    });
+    if(screenTarget) screenTarget.classList.remove('hidden');
 }
 
 // Configurar elementos de texto comuns de usuário logado nas headers
@@ -107,16 +124,18 @@ function renderMenu() {
         const hasAccess = userObj.permissions[moduleName];
         const badge = card.querySelector('.badge-permission');
 
-        if (hasAccess) {
-            card.style.opacity = "1";
-            badge.innerText = "ACESSO_LIBERADO";
-            badge.style.color = "var(--color-success)";
-            badge.style.borderColor = "var(--color-success)";
-        } else {
-            card.style.opacity = "0.6";
-            badge.innerText = "BLOQUEADO_PELO_ADMIN";
-            badge.style.color = "var(--color-danger)";
-            badge.style.borderColor = "var(--color-danger)";
+        if (badge) {
+            if (hasAccess) {
+                card.style.opacity = "1";
+                badge.innerText = "ACESSO_LIBERADO";
+                badge.style.color = "var(--color-success)";
+                badge.style.borderColor = "var(--color-success)";
+            } else {
+                card.style.opacity = "0.6";
+                badge.innerText = "BLOQUEADO_PELO_ADMIN";
+                badge.style.color = "var(--color-danger)";
+                badge.style.borderColor = "var(--color-danger)";
+            }
         }
     });
 }
@@ -131,6 +150,7 @@ document.querySelectorAll('.module-card').forEach(card => {
 
         if (moduleName === 'admin' && userObj.isAdmin) {
             showScreen(screenAdmin);
+            renderAdminRequests(); // Atualiza a lista de requisições pendentes
             return;
         }
 
@@ -160,6 +180,188 @@ document.querySelectorAll('.btn-back').forEach(btn => {
 document.querySelectorAll('.btn-trigger-logout').forEach(btn => {
     btn.addEventListener('click', handleLogout);
 });
+
+
+// ================= FLUXO DE SOLICITAÇÃO E CADASTRO =================
+
+// Links de transição da interface de login/cadastro
+const linkGoRegister = document.getElementById('link-go-register');
+const linkBackLogin = document.getElementById('link-back-login');
+
+if (linkGoRegister) {
+    linkGoRegister.addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen(screenRegister);
+    });
+}
+
+if (linkBackLogin) {
+    linkBackLogin.addEventListener('click', (e) => {
+        e.preventDefault();
+        showScreen(screenLogin);
+    });
+}
+
+// Processamento do Envio de Solicitação
+const btnSendRequest = document.getElementById('btn-send-request');
+if (btnSendRequest) {
+    btnSendRequest.addEventListener('click', () => {
+        const userReg = document.getElementById('reg-username').value.trim().toLowerCase();
+        const emailReg = document.getElementById('reg-email').value.trim();
+        const reqFin = document.getElementById('reg-req-financas').checked;
+        const reqAlm = document.getElementById('reg-req-almoxarifado').checked;
+        const reqMan = document.getElementById('reg-req-manutencao').checked;
+
+        if (!userReg || !emailReg) {
+            alert("SISTEMA: Preencha o nome de usuário e e-mail corporativo obrigatórios.");
+            return;
+        }
+
+        if (usersDB[userReg]) {
+            alert("SISTEMA: Identidade rejeitada. Este usuário já se encontra registrado e ativo.");
+            return;
+        }
+
+        // Cria o registro na árvore temporária de requisições
+        const newRequest = {
+            username: userReg,
+            email: emailReg,
+            permissions: { financas: reqFin, almoxarifado: reqAlm, manutencao: reqMan }
+        };
+
+        requestsDB.push(newRequest);
+        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+
+        alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo para validação.");
+        
+        // Limpa o formulário
+        document.getElementById('reg-username').value = "";
+        document.getElementById('reg-email').value = "";
+        document.getElementById('reg-req-financas').checked = false;
+        document.getElementById('reg-req-almoxarifado').checked = false;
+        document.getElementById('reg-req-manutencao').checked = false;
+        
+        showScreen(screenLogin);
+    });
+}
+
+// Lógica de Redefinição Obrigatória de Senha
+const btnChangePasswordSubmit = document.getElementById('btn-change-password-submit');
+if (btnChangePasswordSubmit) {
+    btnChangePasswordSubmit.addEventListener('click', () => {
+        const newPass = document.getElementById('force-new-password').value;
+        const confPass = document.getElementById('force-confirm-password').value;
+
+        if (!newPass) { alert("SISTEMA: Campo de nova senha inválido."); return; }
+        if (newPass !== confPass) { alert("SISTEMA: Erro de checagem. As senhas informadas não coincidem."); return; }
+
+        // Atualiza a senha e remove o token de conta temporária
+        usersDB[userPendingPasswordForce].password = newPass;
+        usersDB[userPendingPasswordForce].isTemporary = false;
+        localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+
+        alert("DIRETIVAS ATUALIZADAS!\nSenha permanente configurada com sucesso. Inicializando ecossistema...");
+        
+        currentUser = userPendingPasswordForce;
+        sessionStorage.setItem('logged_user', currentUser);
+        userPendingPasswordForce = null;
+        
+        document.getElementById('force-new-password').value = "";
+        document.getElementById('force-confirm-password').value = "";
+        
+        showScreen(screenMenu);
+        renderMenu();
+    });
+}
+
+
+// ================= GESTÃO DE AGUARDO / ANÁLISE DO ADMIN =================
+function renderAdminRequests() {
+    const container = document.getElementById('admin-requests-container');
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (requestsDB.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary); font-size:13px;">[PROVISIONAMENTO]: Nenhuma solicitação pendente no banco de dados.</p>`;
+        return;
+    }
+
+    requestsDB.forEach((req, index) => {
+        const card = document.createElement('div');
+        card.classList.add('request-card');
+        
+        const mods = [];
+        if (req.permissions.financas) mods.push("Finanças");
+        if (req.permissions.almoxarifado) mods.push("Almoxarifado");
+        if (req.permissions.manutencao) mods.push("Manutenção");
+
+        card.innerHTML = `
+            <div class="request-card-header">
+                <strong>Operador: ${req.username.toUpperCase()}</strong>
+                <span style="color: var(--color-primary)">${req.email}</span>
+            </div>
+            <p style="font-size: 13px;"><strong>Módulos Pretendidos:</strong> ${mods.join(', ') || 'Nenhum'}</p>
+            <div class="request-actions">
+                <button class="btn-approve" data-idx="${index}"><i class="fas fa-check"></i> Aprovar Acesso</button>
+                <button class="btn-deny" data-idx="${index}"><i class="fas fa-times"></i> Rejeitar</button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    // Mapeamento dos gatilhos dinâmicos de aprovação/rejeição
+    container.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', (e) => { approveUser(parseInt(e.currentTarget.getAttribute('data-idx'))); });
+    });
+    container.querySelectorAll('.btn-deny').forEach(btn => {
+        btn.addEventListener('click', (e) => { denyUser(parseInt(e.currentTarget.getAttribute('data-idx'))); });
+    });
+}
+
+function approveUser(index) {
+    const req = requestsDB[index];
+    // Gera token de 6 dígitos numéricos aleatórios para a credencial provisória
+    const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Adiciona o usuário à árvore permanente com a flag de temporário ativada
+    usersDB[req.username] = {
+        password: temporaryPassword,
+        displayName: req.username.toUpperCase() + "_USER",
+        isAdmin: false,
+        isTemporary: true,
+        email: req.email,
+        permissions: { 
+            financas: req.permissions.financas, 
+            almoxarifado: req.permissions.almoxarifado, 
+            manutencao: req.permissions.manutencao 
+        }
+    };
+
+    localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+    requestsDB.splice(index, 1); // Remove da fila analítica
+    localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+
+    // Despacho simulado de e-mail de provisionamento
+    alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Acesso Liberado - Enterprise OS\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso foi APROVADA pelo administrador.\n\nSua senha temporária é: ${temporaryPassword}\n\nNo seu primeiro login, você será redirecionado para cadastrar sua senha definitiva.`);
+    
+    renderAdminRequests();
+}
+
+function denyUser(index) {
+    const req = requestsDB[index];
+    const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
+    
+    if (motive === null) return; // Cancela operação se o admin fechar a caixa
+    const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
+
+    requestsDB.splice(index, 1);
+    localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+
+    // Despacho simulado de e-mail de barreira técnica
+    alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Solicitação de Acesso Negada\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso ao Enterprise OS foi REJEITADA.\n\nMotivo da Administração:\n"${finalMotive}"`);
+
+    renderAdminRequests();
+}
 
 
 // ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES) =================
@@ -200,7 +402,7 @@ btnSavePermissions.addEventListener('click', () => {
 });
 
 
-// ================= MÓDULO: FINANÇAS (ENGINE) =================
+// ================= MÓDULO: FINANÇAS (ENGINE ORIGINAL) =================
 function loadFinancasData() {
     const storageKey = `my_finances_data_${currentUser}`;
     transactions = JSON.parse(localStorage.getItem(storageKey)) || [];
