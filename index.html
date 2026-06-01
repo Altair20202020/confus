@@ -161,12 +161,14 @@
                     <p>Controle de fluxo de caixa, despesas e relatórios.</p>
                     <span class="badge-permission">Acesso Restrito</span>
                 </div>
+                
                 <div class="module-card" id="mod-almoxarifado" data-module="almoxarifado">
                     <i class="fas fa-boxes-stacked mod-icon"></i>
                     <h3>ALMOXARIFADO</h3>
-                    <p>Módulo em desenvolvimento (Bloqueado).</p>
-                    <span class="badge-permission">Indisponível</span>
+                    <p>Controle de inventário, valoração de estoque e alertas de reposição.</p>
+                    <span class="badge-permission">Acesso Restrito</span>
                 </div>
+                
                 <div class="module-card" id="mod-manutencao" data-module="manutencao">
                     <i class="fas fa-tools mod-icon"></i>
                     <h3>MANUTENÇÃO</h3>
@@ -298,13 +300,88 @@
             </main>
         </div>
 
-    </div>
+        <div class="container hidden" id="almoxarifado-dashboard">
+            <header class="system-header">
+                <div class="header-left">
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>MODULO_ALMOXARIFADO // INVENTORY</h1>
+                </div>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
+            </header>
 
-   </div> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+            <section class="dashboard-grid">
+                <div class="balance-card main-balance" style="background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%);">
+                    <div class="card-header"><h3>VALOR_TOTAL_ESTOQUE</h3><i class="fas fa-coins"></i></div>
+                    <p class="balance-value" id="stock-total-value">R$ 0,00</p>
+                </div>
+                <div class="mini-cards-wrapper">
+                    <div class="card entrada">
+                        <div class="card-info"><h3>TOTAL_DE_SKUS</h3><p id="stock-total-items">0 Itens</p></div>
+                        <i class="fas fa-box-open icon-entries"></i>
+                    </div>
+                    <div class="card saida" style="border-left: 4px solid #f59e0b;">
+                        <div class="card-info"><h3>ALERTAS_REPOSIÇÃO</h3><p id="stock-alerts" style="color: #f59e0b;">0 Críticos</p></div>
+                        <i class="fas fa-triangle-exclamation icon-expenses" style="color: #f59e0b;"></i>
+                    </div>
+                </div>
+            </section>
+
+            <main class="control-panel" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px;">
+                
+                <div class="sys-box" style="padding: 20px; background: #131622; border-radius: 8px;">
+                    <h3><i class="fas fa-plus-circle"></i> Entrada de Material (SKU)</h3>
+                    <div style="margin-top: 15px;">
+                        <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:5px;">Nome do Material / Item</label>
+                        <input type="text" id="stock-item-name" style="width:100%; padding:10px; background:#1e2235; border:1px solid #2e3450; color:#fff; border-radius:4px;" placeholder="Ex: Cabo Categoria 6 Lan">
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <div style="flex: 1;">
+                            <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:5px;">Qtd Inicial</label>
+                            <input type="number" id="stock-item-qty" style="width:100%; padding:10px; background:#1e2235; border:1px solid #2e3450; color:#fff; border-radius:4px;" placeholder="0">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:5px;">Estoque Mínimo</label>
+                            <input type="number" id="stock-item-min" style="width:100%; padding:10px; background:#1e2235; border:1px solid #2e3450; color:#fff; border-radius:4px;" placeholder="Alerta">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label style="display:block; font-size:12px; color:#94a3b8; margin-bottom:5px;">Custo Unitário (R$)</label>
+                        <input type="number" step="0.01" id="stock-item-cost" style="width:100%; padding:10px; background:#1e2235; border:1px solid #2e3450; color:#fff; border-radius:4px;" placeholder="0.00">
+                    </div>
+                    <button id="btn-save-stock" class="btn-sys-modern" style="margin-top: 20px; width: 100%; background: #6366f1;">
+                        <span>Dar Entrada no Estoque</span>
+                    </button>
+                </div>
+
+                <div class="sys-box" style="padding: 20px; background: #131622; border-radius: 8px;">
+                    <h3><i class="fas fa-warehouse"></i> Inventário em Tempo Real</h3>
+                    <div style="max-height: 400px; overflow-y: auto; margin-top: 15px;">
+                        <table class="stock-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #2e3450; color: #94a3b8;">
+                                    <th style="padding: 10px;">MATERIAL</th>
+                                    <th style="padding: 10px;">QTD</th>
+                                    <th style="padding: 10px;">MÍNIMO</th>
+                                    <th style="padding: 10px;">CUSTO UNIT.</th>
+                                    <th style="padding: 10px;">TOTAL</th>
+                                    <th style="padding: 10px; text-align: right;">AÇÕES</th>
+                                </tr>
+                            </thead >
+                            <tbody id="stock-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+    </div> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <script type="text/javascript">
        (function(){
-          // CORRIGIDO: Inicialização estruturada com publicKey recomendada pela documentação oficial
           emailjs.init({
              publicKey: "4OW4x54PPSIewfjV-",
           });
