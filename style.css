@@ -1,41 +1,378 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f9;
+/* --- RESET E VARIÁVEIS DO SISTEMA (DARK THEME) --- */
+* {
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace; /* Fonte estilo código para cara de sistema */
 }
-.container {
-    max-width: 600px;
-    margin: 0 auto;
+
+:root {
+    --bg-main: #0a0b10;          /* Fundo total */
+    --bg-box: #14161f;           /* Fundo dos cards e boxes */
+    --bg-input: #1f2230;         /* Fundo de inputs */
+    
+    --text-primary: #e0e6ed;     /* Texto principal */
+    --text-secondary: #94a3b8;   /* Texto apagado */
+    
+    --color-primary: #6c5ce7;    /* Roxo Elétrico (Ações) */
+    --color-primary-hover: #5a4bcf;
+    
+    --color-success: #00ff88;    /* Verde Neon (Entradas) */
+    --color-danger: #ff4757;     /* Vermelho Neon (Saídas) */
+    
+    --border-color: #2d3748;     /* Cor das bordas organizadas */
 }
-.cards {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
 }
-.card {
-    flex: 1;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-.entrada h3 { color: #2ecc71; }
-.saida h3 { color: #e74c3c; }
-.btn-add {
+
+.main-wrapper {
     width: 100%;
-    padding: 15px;
-    background-color: #3498db;
-    color: white;
-    border: none;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px; /* Largura total no PC */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- SYSTEM HEADER --- */
+.system-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    font-size: 16px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.system-logo {
+    font-size: 24px;
+    color: var(--color-primary);
+}
+
+#app-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--text-primary);
+    outline: none;
+    border-bottom: 1px solid transparent;
+}
+
+#app-title:focus {
+    border-bottom-color: var(--color-primary);
+}
+
+.system-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.status-ok {
+    color: var(--color-success);
+    font-weight: 700;
+    animation: blink 1.5s infinite;
+}
+
+/* --- DASHBOARD GRID (PC) --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr; /* Saldo maior, resumo menor */
+    gap: 20px;
+}
+
+/* Estilo Geral dos Boxes */
+.sys-box, .balance-card, .card {
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.sys-box:hover, .card:hover {
+    border-color: var(--color-primary);
+}
+
+/* Card Principal */
+.balance-card {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: linear-gradient(135deg, #14161f 0%, #1a1d29 100%);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+.card-header h3 { font-size: 14px; letter-spacing: 1px; }
+.card-header i { font-size: 18px; color: var(--color-primary); }
+
+.balance-value {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-shadow: 0 0 15px rgba(255,255,255,0.1);
+}
+
+/* Mini Cards */
+.mini-cards-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.card {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card h3 { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+.card p { font-size: 20px; font-weight: 700; }
+
+.icon-entries { color: var(--color-success); font-size: 24px; opacity: 0.8; }
+.icon-expenses { color: var(--color-danger); font-size: 24px; opacity: 0.8; }
+
+/* --- CONTROL PANEL (LAYOUT PC) --- */
+.control-panel {
+    display: grid;
+    grid-template-columns: 350px 1fr; /* Formulário fixo, Lista expande */
+    gap: 20px;
+    align-items: start;
+}
+
+.box-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.box-header h2 {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+}
+
+/* Formulário */
+.form-section .form-group {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.form-group label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 5px;
+}
+
+.form-group input, .form-group select {
+    padding: 12px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: var(--color-primary);
+}
+
+/* Lista de Transações */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-list {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 500px;
+    overflow-y: auto; /* Scroll interno se a lista crescer */
+}
+
+/* Scrollbar Customizada */
+.transaction-list::-webkit-scrollbar { width: 6px; }
+.transaction-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+/* Item da Lista */
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: rgba(255,255,255,0.02);
+    border-radius: 4px;
+    border-left: 3px solid transparent;
     cursor: pointer;
 }
 
-/* O TRUQUE PARA CELULAR: Se a tela for pequena, os cards ficam um embaixo do outro */
-@media (max-width: 480px) {
-    .cards {
+.transaction-item:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.check-box {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border-color);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bg-main);
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.item-info { font-size: 14px; color: var(--text-primary); }
+.item-value { font-size: 14px; font-weight: 700; }
+
+/* Cores dos Itens */
+.item-entrada { border-left-color: var(--color-success); }
+.item-entrada .item-value { color: var(--color-success); }
+
+.item-saida { border-left-color: var(--color-danger); }
+.item-saida .item-value { color: var(--color-danger); }
+
+/* Item Concluído (Riscado) */
+.transaction-item.completed {
+    opacity: 0.3;
+}
+.transaction-item.completed .item-info {
+    text-decoration: line-through;
+}
+.transaction-item.completed .check-box {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+/* --- BOTÕES DO SISTEMA --- */
+[class^="btn-sys-"] {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.btn-sys-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+.btn-sys-primary:hover { background-color: var(--color-primary-hover); }
+
+.btn-sys-danger {
+    background-color: transparent;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    padding: 8px 15px;
+    font-size: 11px;
+}
+.btn-sys-danger:hover {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+/* Animação de Piscar */
+@keyframes blink { 50% { opacity: 0.5; } }
+
+/* ============================================================
+   📱 MEDIA QUERY - RESPONSIVIDADE AUTOMÁTICA (CELULAR)
+   ============================================================ */
+@media (max-width: 768px) {
+    .main-wrapper {
+        padding: 10px;
+    }
+
+    .container {
+        gap: 15px;
+    }
+
+    .system-header {
         flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    /* Dashboard vira coluna única no celular */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .balance-value {
+        font-size: 32px;
+    }
+
+    .card p {
+        font-size: 18px;
+    }
+
+    /* Painel de Controle vira coluna única no celular */
+    .control-panel {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Move o formulário para baixo da lista se quiser, 
+       ou mantém no topo. Aqui vamos manter no topo para cadastro rápido. */
+
+    .form-section .form-group {
+        padding: 15px;
+    }
+
+    .transaction-list {
+        max-height: 400px; /* Menor no celular */
+    }
+
+    .transaction-item {
+        padding: 12px;
+    }
+
+    .item-info, .item-value {
+        font-size: 13px;
     }
 }
