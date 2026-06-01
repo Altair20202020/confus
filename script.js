@@ -209,7 +209,7 @@ if (linkBackLogin) {
     });
 }
 
-// Processamento do Envio de Solicitação
+// Processamento do Envio de Solicitação (Modificado com Integração EmailJS)
 const btnSendRequest = document.getElementById('btn-send-request');
 if (btnSendRequest) {
     btnSendRequest.addEventListener('click', () => {
@@ -229,26 +229,56 @@ if (btnSendRequest) {
             return;
         }
 
-        // Cria o registro na árvore temporária de requisições
+        // Mapeia quais módulos foram selecionados para enviar no corpo do e-mail
+        let modulosLista = [];
+        if (reqFin) modulosLista.push("Finanças");
+        if (reqAlm) modulosLista.push("Almoxarifado");
+        if (reqMan) modulosLista.push("Manutenção");
+        const modulosTexto = modulosLista.length > 0 ? modulosLista.join(", ") : "Nenhum";
+
+        // Cria o registro na árvore temporária de requisições local
         const newRequest = {
             username: userReg,
             email: emailReg,
             permissions: { financas: reqFin, almoxarifado: reqAlm, manutencao: reqMan }
         };
 
-        requestsDB.push(newRequest);
-        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+        // Altera texto do botão para dar feedback visual de carregamento
+        const btnSpan = btnSendRequest.querySelector('span');
+        const txtOriginal = btnSpan.innerText;
+        btnSpan.innerText = "Processando Envio...";
+        btnSendRequest.disabled = true;
 
-        alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo para validação.");
-        
-        // Limpa o formulário
-        document.getElementById('reg-username').value = "";
-        document.getElementById('reg-email').value = "";
-        document.getElementById('reg-req-financas').checked = false;
-        document.getElementById('reg-req-almoxarifado').checked = false;
-        document.getElementById('reg-req-manutencao').checked = false;
-        
-        showScreen(screenLogin);
+        // Dispara notificação via EmailJS usando seu template correspondente
+        emailjs.send("default_service", "template_7ig858y", {
+            username: userReg.toUpperCase(),
+            email: emailReg,
+            modules: modulosTexto
+        })
+        .then(() => {
+            // Salva na lista pendente se o e-mail for enviado com sucesso
+            requestsDB.push(newRequest);
+            localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+
+            alert("SOLICITAÇÃO PROTOCOLADA!\nSuas credenciais foram encaminhadas ao painel administrativo via e-mail corporativo.");
+            
+            // Limpa o formulário
+            document.getElementById('reg-username').value = "";
+            document.getElementById('reg-email').value = "";
+            document.getElementById('reg-req-financas').checked = false;
+            document.getElementById('reg-req-almoxarifado').checked = false;
+            document.getElementById('reg-req-manutencao').checked = false;
+            
+            showScreen(screenLogin);
+        })
+        .catch((err) => {
+            alert("SISTEMA: Falha de conexão com os servidores do gateway de e-mail. Tente novamente.");
+            console.error("Erro EmailJS:", err);
+        })
+        .finally(() => {
+            btnSpan.innerText = txtOriginal;
+            btnSendRequest.disabled = false;
+        });
     });
 }
 
@@ -349,9 +379,8 @@ function approveUser(index) {
     localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
 
     // ================= DISPARO REAL COM EMAILJS =================
-    // ATENÇÃO: Substitua pelos IDs gerados no seu painel
-    emailjs.send("seu_service_id", "seu_template_id", {
-        to_email: req.email,               
+    emailjs.send("default_service", "template_7ig858y", {
+        to_email: req.email,              
         username: req.username.toUpperCase(), 
         senha_temporaria: temporaryPassword   
     }).then(() => {
