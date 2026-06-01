@@ -405,4 +405,67 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 @media (max-width: 768px) {
     .system-header { flex-direction: column; gap: 10px; }
     .dashboard-grid, .control-panel { grid-template-columns: 1fr; }
+    /* --- COMPLEMENTOS DE LINK E SOLICITAÇÕES --- */
+.login-extra-links {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 13px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+.login-extra-links a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+.login-extra-links a:hover {
+    text-decoration: underline;
+}
+
+.modules-requested-box {
+    background-color: var(--bg-box);
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+}
+.modules-requested-box .box-title {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 10px;
+}
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+.checkbox-option input { cursor: pointer; width: 16px; height: 16px; }
+
+/* Cards de Solicitação na tela do Administrador */
+.request-card {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.request-card-header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 8px;
+    font-size: 14px;
+}
+.request-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+.btn-approve { background-color: #2ecc71; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+.btn-deny { background-color: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 }
