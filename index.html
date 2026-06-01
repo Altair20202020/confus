@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance PRO - Secure Login</title>
+    <title>Enterprise OS - Architecture</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -12,60 +12,131 @@
         
         <div class="login-container sys-box" id="login-screen">
             <div class="box-header">
-                <h2><i class="fas fa-lock"></i> AUTH_REQUIRED (LOGIN)</h2>
+                <h2><i class="fas fa-lock"></i> SYSTEM_AUTH_GATEWAY</h2>
             </div>
             <div class="form-group">
-                <p class="login-tip">Contas padrão:<br>• Usuário: <b>altair</b> / Senha: <b>123</b><br>• Usuário: <b>meli</b> / Senha: <b>456</b></p>
-                
                 <label>Usuário</label>
-                <input type="text" id="login-username" placeholder="Digite seu usuário">
+                <input type="text" id="login-username" placeholder="Usuário (Ex: altair, meli)">
                 
                 <label>Senha</label>
                 <input type="password" id="login-password" placeholder="••••••••">
                 
                 <button id="btn-login" class="btn-sys-primary">
-                    <i class="fas fa-sign-in-alt"></i> ACESSAR_SISTEMA
+                    <i class="fas fa-sign-in-alt"></i> AUTENTICAR
                 </button>
                 <p id="login-error" class="error-msg"></p>
             </div>
         </div>
 
+        <div class="menu-container hidden" id="menu-screen">
+            <header class="system-header">
+                <div class="header-left">
+                    <i class="fas fa-cubes system-logo"></i>
+                    <h1>MAIN_MENU // ENTERPRISE_OS</h1>
+                </div>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user-shield"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
+            </header>
+
+            <div class="modules-grid">
+                <div class="module-card" id="mod-financas" data-module="financas">
+                    <i class="fas fa-wallet mod-icon"></i>
+                    <h3>FINANÇAS</h3>
+                    <p>Controle de fluxo de caixa, despesas e relatórios.</p>
+                    <span class="badge-permission">Acesso Restrito</span>
+                </div>
+                <div class="module-card disabled" id="mod-almoxarifado" data-module="almoxarifado">
+                    <i class="fas fa-boxes-stacked mod-icon"></i>
+                    <h3>ALMOXARIFADO</h3>
+                    <p>Módulo em desenvolvimento (Bloqueado).</p>
+                    <span class="badge-permission">Indisponível</span>
+                </div>
+                <div class="module-card disabled" id="mod-manutencao" data-module="manutencao">
+                    <i class="fas fa-tools mod-icon"></i>
+                    <h3>MANUTENÇÃO</h3>
+                    <p>Módulo em desenvolvimento (Bloqueado).</p>
+                    <span class="badge-permission">Indisponível</span>
+                </div>
+                <div class="module-card admin-only hidden" id="mod-admin" data-module="admin">
+                    <i class="fas fa-sliders-h mod-icon"></i>
+                    <h3>PAINEL ADMIN</h3>
+                    <p>Gerenciamento de usuários e permissões do sistema.</p>
+                    <span class="badge-permission badge-admin">Master</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="container hidden" id="admin-panel">
+            <header class="system-header">
+                <div class="header-left">
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>ADMIN_CONTROL_CENTER</h1>
+                </div>
+                <div class="header-right">
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
+            </header>
+
+            <main class="admin-content sys-box">
+                <div class="box-header">
+                    <h2><i class="fas fa-users-cog"></i> GERENCIAR_PERMISSOES_DE_USUARIOS</h2>
+                </div>
+                <div class="admin-workspace">
+                    <div class="search-box-wrapper">
+                        <input type="text" id="admin-search-user" placeholder="Pesquise o nome do usuário (Ex: altair, meli)">
+                        <button id="btn-search-user" class="btn-sys-primary"><i class="fas fa-search"></i> BUSCAR</button>
+                    </div>
+
+                    <div id="admin-user-permissions-card" class="permissions-editor hidden">
+                        <h3 id="editing-user-title">Editando: USUARIO</h3>
+                        
+                        <div class="permission-row">
+                            <label>Módulo Finanças</label>
+                            <input type="checkbox" id="perm-financas">
+                        </div>
+                        <div class="permission-row">
+                            <label>Módulo Almoxarifado (Futuro)</label>
+                            <input type="checkbox" id="perm-almoxarifado">
+                        </div>
+                        <div class="permission-row">
+                            <label>Módulo Manutenção (Futuro)</label>
+                            <input type="checkbox" id="perm-manutencao">
+                        </div>
+                        
+                        <button id="btn-save-permissions" class="btn-sys-primary" style="margin-top: 15px;">
+                            <i class="fas fa-save"></i> SALVAR PERMISSÕES
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
         <div class="container hidden" id="system-dashboard">
             <header class="system-header">
                 <div class="header-left">
-                    <i class="fas fa-wallet system-logo"></i>
-                    <h1 id="app-title">FINANCE_PRO</h1>
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>MODULO_FINANÇAS</h1>
                 </div>
                 <div class="header-right">
-                    <span class="user-badge"><i class="fas fa-user"></i> <span id="current-user-name">USER</span></span>
-                    <button class="btn-logout" id="btn-logout" title="Sair do Sistema">
-                        <i class="fas fa-power-off"></i> LOGOUT
-                    </button>
+                    <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
                 </div>
             </header>
 
             <section class="dashboard-grid">
                 <div class="balance-card main-balance">
-                    <div class="card-header">
-                        <h3>SALDO_DISPONÍVEL</h3>
-                        <i class="fas fa-sack-dollar"></i>
-                    </div>
+                    <div class="card-header"><h3>SALDO_DISPONÍVEL</h3><i class="fas fa-sack-dollar"></i></div>
                     <p class="balance-value" id="total-balance">R$ 0,00</p>
                 </div>
-                
                 <div class="mini-cards-wrapper">
                     <div class="card entrada">
-                        <div class="card-info">
-                            <h3>ENTRADAS_TOTAIS</h3>
-                            <p id="total-entries">R$ 0,00</p>
-                        </div>
+                        <div class="card-info"><h3>ENTRADAS_TOTAIS</h3><p id="total-entries">R$ 0,00</p></div>
                         <i class="fas fa-arrow-trend-up icon-entries"></i>
                     </div>
                     <div class="card saida">
-                        <div class="card-info">
-                            <h3>DÍVIDAS_ATIVAS</h3>
-                            <p id="total-expenses">R$ 0,00</p>
-                        </div>
+                        <div class="card-info"><h3>DÍVIDAS_ATIVAS</h3><p id="total-expenses">R$ 0,00</p></div>
                         <i class="fas fa-arrow-trend-down icon-expenses"></i>
                     </div>
                 </div>
@@ -73,42 +144,32 @@
 
             <main class="control-panel">
                 <section class="form-section sys-box">
-                    <div class="box-header">
-                        <h2><i class="fas fa-plus-circle"></i> NOVO_REGISTRO</h2>
-                    </div>
+                    <div class="box-header"><h2><i class="fas fa-plus-circle"></i> NOVO_REGISTRO</h2></div>
                     <div class="form-group">
                         <label>Descrição</label>
                         <input type="text" id="trans-title" placeholder="Ex: Mercado, Salário">
-                        
                         <label>Valor (R$)</label>
                         <input type="number" id="trans-value" placeholder="0,00">
-                        
                         <label>Tipo de Fluxo</label>
                         <select id="trans-type">
                             <option value="entrada">ENTRADA (+)</option>
                             <option value="saida">DÍVIDA / GASTO (-)</option>
                         </select>
-                        
-                        <button id="btn-save" class="btn-sys-primary">
-                            <i class="fas fa-save"></i> PROCESSAR
-                        </button>
+                        <button id="btn-save" class="btn-sys-primary"><i class="fas fa-save"></i> PROCESSAR</button>
                     </div>
                 </section>
 
                 <section class="history-section sys-box">
                     <div class="box-header history-header">
                         <h2><i class="fas fa-list-ul"></i> REGISTROS_DO_SISTEMA</h2>
-                        <button class="btn-sys-danger" id="btn-clear">
-                            <i class="fas fa-trash-alt"></i> PURGE_DATA
-                        </button>
+                        <button class="btn-sys-danger" id="btn-clear"><i class="fas fa-trash-alt"></i> PURGE_DATA</button>
                     </div>
-                    <div class="transaction-list" id="list-container">
-                        </div>
+                    <div class="transaction-list" id="list-container"></div>
                 </section>
             </main>
         </div>
-    </div>
 
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
