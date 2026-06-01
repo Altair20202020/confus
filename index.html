@@ -10,38 +10,43 @@
 <body class="dark-theme">
     <div class="main-wrapper">
         
-        <div class="login-wrapper-central" id="login-screen">
-            <div class="login-card sys-box">
-                <div class="login-header">
-                    <div class="login-logo">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h2>SECURE_OS // GATEWAY</h2>
-                    <p>Insira suas credenciais de criptografia para acessar a rede</p>
+        <div class="login-split-container" id="login-screen">
+            <div class="login-branding-side">
+                <div class="branding-overlay"></div>
+                <div class="branding-content">
+                    <div class="brand-badge"><i class="fas fa-cubes"></i> ENTERPRISE_OS</div>
+                    <h2>Gerencie toda a sua operação em um único ecossistema integrado.</h2>
+                    <p>Alta performance, controle absoluto de dados e módulos inteligentes criados para escalar o seu negócio.</p>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label><i class="fas fa-terminal"></i> DIRETÓRIO / USUÁRIO</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user-shield input-icon"></i>
-                        <input type="text" id="login-username" placeholder="Identificador do operador">
+            <div class="login-form-side">
+                <div class="login-form-wrapper">
+                    <div class="login-form-header">
+                        <h2>Seja bem-vindo</h2>
+                        <p>Insira suas credenciais para acessar a sua área de trabalho</p>
                     </div>
-                    
-                    <label><i class="fas fa-key"></i> CHAVE DE ACESSO / SENHA</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock input-icon"></i>
-                        <input type="password" id="login-password" placeholder="••••••••">
-                    </div>
-                    
-                    <button id="btn-login" class="btn-sys-primary btn-login-glow">
-                        <i class="fas fa-sign-in-alt"></i> INICIAR SESSÃO CRIPTOGRAFADA
-                    </button>
-                    
-                    <p id="login-error" class="error-msg"></p>
-                </div>
 
-                <div class="login-footer">
-                    <span><i class="fas fa-network-wired"></i> PROTOCOLO: HTTPS/AES-256</span>
+                    <div class="form-group">
+                        <div class="modern-input-group">
+                            <input type="text" id="login-username" required placeholder=" ">
+                            <label for="login-username">Usuário</label>
+                            <span class="input-line"></span>
+                        </div>
+                        
+                        <div class="modern-input-group">
+                            <input type="password" id="login-password" required placeholder=" ">
+                            <label for="login-password">Senha de Acesso</label>
+                            <span class="input-line"></span>
+                        </div>
+                        
+                        <button id="btn-login" class="btn-sys-modern">
+                            <span>Acessar Plataforma</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        
+                        <p id="login-error" class="error-msg"></p>
+                    </div>
                 </div>
             </div>
         </div>
