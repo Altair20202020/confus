@@ -201,6 +201,10 @@ document.querySelectorAll('.btn-trigger-logout').forEach(btn => {
     btn.addEventListener('click', handleLogout);
 });
 
+if (btnLogin) {
+    btnLogin.addEventListener('click', handleLogin);
+}
+
 
 // ================= FLUXO DE SOLICITAÇÃO E CADASTRO =================
 
@@ -330,23 +334,26 @@ function renderAdminRequests() {
     });
 
     container.querySelectorAll('.btn-approve').forEach(btn => {
-        btn.addEventListener('click', (e) => { approveUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget); });
+        btn.addEventListener('click', (e) => {
+            approveUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget);
+        });
     });
+
     container.querySelectorAll('.btn-deny').forEach(btn => {
-        btn.addEventListener('click', (e) => { denyUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget); });
+        btn.addEventListener('click', (e) => {
+            denyUser(parseInt(e.currentTarget.getAttribute('data-idx')), e.currentTarget);
+        });
     });
 }
 
 function approveUser(index, targetButton) {
     const req = requestsDB[index];
-    
     if (targetButton) {
         targetButton.disabled = true;
         targetButton.innerHTML = "Enviando e-mail...";
     }
 
     const temporaryPassword = Math.floor(100000 + Math.random() * 900000).toString();
-
     usersDB[req.username] = {
         password: temporaryPassword,
         displayName: req.username.toUpperCase() + "_USER",
@@ -354,23 +361,18 @@ function approveUser(index, targetButton) {
         isTemporary: true,
         isBlocked: false,
         email: req.email,
-        permissions: { 
-            financas: req.permissions.financas, 
-            almoxarifado: req.permissions.almoxarifado, 
-            manutencao: req.permissions.manutencao 
-        }
+        permissions: { financas: req.permissions.financas, almoxarifado: req.permissions.almoxarifado, manutencao: req.permissions.manutencao }
     };
 
     emailjs.send("default_service", "template_7ig858y", {
-        to_email: req.email,              
-        username: req.username.toUpperCase(), 
-        senha_temporaria: temporaryPassword   
+        to_email: req.email,
+        username: req.username.toUpperCase(),
+        senha_temporaria: temporaryPassword
     })
     .then(() => {
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
         requestsDB.splice(index, 1);
         localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
-        
         alert(`SISTEMA: Usuário aprovado com sucesso! E-mail oficial enviado para: ${req.email}`);
     })
     .catch((error) => {
@@ -384,10 +386,9 @@ function approveUser(index, targetButton) {
 
 function denyUser(index, targetButton) {
     const req = requestsDB[index];
-    
-    const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
-    if (motive === null) return; 
-    
+    const motive = prompt(`Informe o motivo técnico da recuperação para o operador ${req.username.toUpperCase()}:`);
+    if (motive === null) return;
+
     const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
 
     if (targetButton) {
@@ -396,9 +397,9 @@ function denyUser(index, targetButton) {
     }
 
     emailjs.send("default_service", "template_v5wk5hw", {
-        to_email: req.email,              
-        username: req.username.toUpperCase(), 
-        motivo: finalMotive   
+        to_email: req.email,
+        username: req.username.toUpperCase(),
+        motivo: finalMotive
     })
     .then(() => {
         requestsDB.splice(index, 1);
@@ -414,11 +415,9 @@ function denyUser(index, targetButton) {
     });
 }
 
-
 // ================= SEÇÃO ADMINISTRATIVA (PERMISSÕES E MODERAÇÃO) =================
-
 function injectAdminActionButtons() {
-    if (document.getElementById('btn-admin-block-user')) return; 
+    if (document.getElementById('btn-admin-block-user')) return;
 
     const containerSave = document.getElementById('btn-save-permissions');
     if (!containerSave) return;
@@ -433,220 +432,180 @@ function injectAdminActionButtons() {
     btnBlock.className = 'btn-sys';
     btnBlock.style.backgroundColor = '#d35400';
     btnBlock.style.color = '#fff';
-    btnBlock.innerHTML = `<i class="fas fa-ban"></i> <span id="label-block-txt">Bloquear Usuário</span>`;
-
-    const btnDelete = document.createElement('button');
-    btnDelete.id = 'btn-admin-delete-user';
-    btnDelete.className = 'btn-sys btn-sys-danger';
-    btnDelete.innerHTML = `<i class="fas fa-user-slash"></i> Excluir Conta`;
-
-    wrapper.appendChild(btnBlock);
-    wrapper.appendChild(btnDelete);
+    btnBlock.style.border = "none";
+    btnBlock.style.padding = "10px";
+    btnBlock.style.borderRadius = "4px";
+    btnBlock.style.cursor = "pointer";
+    btnBlock.style.fontSize = "12px";
+    btnBlock.style.fontWeight = "bold";
+    btnBlock.innerHTML = `<i class="fas fa-ban"></i> ALTERAR BLOQUEIO (ON/OFF)`;
 
     containerSave.parentNode.insertBefore(wrapper, containerSave.nextSibling);
+    wrapper.appendChild(btnBlock);
 
     btnBlock.addEventListener('click', () => {
         if (!userBeingEdited) return;
         if (userBeingEdited === 'altair') {
-            alert("ERRO: O usuário mestre administrador root (altair) não pode ser bloqueado.");
+            alert("ERRO OPERACIONAL: Contas raiz master da arquitetura não admitem bloqueios de segurança.");
             return;
         }
-
-        const currentState = usersDB[userBeingEdited].isBlocked || false;
-        usersDB[userBeingEdited].isBlocked = !currentState;
+        const state = usersDB[userBeingEdited].isBlocked;
+        usersDB[userBeingEdited].isBlocked = !state;
         localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-
-        if (usersDB[userBeingEdited].isBlocked) {
-            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi BLOQUEADO.`);
-            btnBlock.style.backgroundColor = '#27ae60';
-            document.getElementById('label-block-txt').innerText = "Desbloquear Usuário";
-        } else {
-            alert(`SISTEMA: O usuário ${userBeingEdited.toUpperCase()} foi DESBLOQUEADO.`);
-            btnBlock.style.backgroundColor = '#d35400';
-            document.getElementById('label-block-txt').innerText = "Bloquear Usuário";
-        }
+        alert(`STATUS MODIFICADO!\nO usuário ${userBeingEdited.toUpperCase()} agora está: ${!state ? 'BLOQUEADO' : 'ATIVO/LIBERADO'}.`);
     });
+}
 
-    btnDelete.addEventListener('click', () => {
-        if (!userBeingEdited) return;
-        if (userBeingEdited === 'altair') {
-            alert("ERRO: O administrador root master (altair) não pode ser removido.");
-            return;
-        }
+if (btnSearchUser) {
+    btnSearchUser.addEventListener('click', () => {
+        const query = searchUserInput.value.trim().toLowerCase();
+        if (!query) return;
 
-        if (confirm(`⚠️ ALERTA DE EXCLUSÃO CRÍTICA ⚠️\n\nTem certeza de que deseja apagar o usuário ${userBeingEdited.toUpperCase()} permanentemente da base de dados?`)) {
-            delete usersDB[userBeingEdited];
-            localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+        if (usersDB[query]) {
+            userBeingEdited = query;
+            editingUserTitle.innerText = `Editando Diretrizes de: ${query.toUpperCase()} (${usersDB[query].displayName})`;
             
-            alert("SISTEMA: Registro eliminado com sucesso da árvore do diretório.");
+            chkFinancas.checked = usersDB[query].permissions.financas;
+            chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
+            chkManutencao.checked = usersDB[query].permissions.manutencao;
+
+            permissionsCard.classList.remove('hidden');
+        } else {
+            alert("SISTEMA: Usuário não localizado no banco de dados ativo.");
             permissionsCard.classList.add('hidden');
-            searchUserInput.value = "";
             userBeingEdited = null;
         }
     });
 }
 
-btnSearchUser.addEventListener('click', () => {
-    const query = searchUserInput.value.trim().toLowerCase();
-    
-    if (usersDB[query]) {
-        userBeingEdited = query;
-        editingUserTitle.innerText = `EDITANDO_DIRETIVAS: ${query.toUpperCase()}`;
-        
-        // CORRIGIDO: Removido erro de digitação original "permissions.financianca"
-        chkFinancas.checked = usersDB[query].permissions.financas;
-        chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
-        chkManutencao.checked = usersDB[query].permissions.manutencao;
-        
-        const btnBlock = document.getElementById('btn-admin-block-user');
-        if (btnBlock) {
-            if (usersDB[query].isBlocked) {
-                btnBlock.style.backgroundColor = '#27ae60';
-                document.getElementById('label-block-txt').innerText = "Desbloquear Usuário";
-            } else {
-                btnBlock.style.backgroundColor = '#d35400';
-                document.getElementById('label-block-txt').innerText = "Bloquear Usuário";
-            }
-        }
+if (btnSavePermissions) {
+    btnSavePermissions.addEventListener('click', () => {
+        if (!userBeingEdited) return;
 
-        permissionsCard.classList.remove('hidden');
-    } else {
-        alert("SISTEMA: Usuário não localizado na árvore de diretórios.");
-        permissionsCard.classList.add('hidden');
-        userBeingEdited = null;
-    }
-});
+        usersDB[userBeingEdited].permissions.financas = chkFinancas.checked;
+        usersDB[userBeingEdited].permissions.almoxarifado = chkAlmoxarifado.checked;
+        usersDB[userBeingEdited].permissions.manutencao = chkManutencao.checked;
 
-btnSavePermissions.addEventListener('click', () => {
-    if (!userBeingEdited) return;
-
-    usersDB[userBeingEdited].permissions.financas = chkFinancas.checked;
-    usersDB[userBeingEdited].permissions.almoxarifado = chkAlmoxarifado.checked;
-    usersDB[userBeingEdited].permissions.manutencao = chkManutencao.checked;
-
-    localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
-    alert(`DIRETIVAS ATUALIZADAS: Permissões de ${userBeingEdited.toUpperCase()} aplicadas com sucesso.`);
-    
-    permissionsCard.classList.add('hidden');
-    searchUserInput.value = "";
-});
+        localStorage.setItem('sys_users_db', JSON.stringify(usersDB));
+        alert(`SUCESSO: As permissões do usuário ${userBeingEdited.toUpperCase()} foram atualizadas com sucesso!`);
+    });
+}
 
 
-// ================= MÓDULO: FINANÇAS (ENGINE ORIGINAL) =================
+// ================= MÓDULO FINANÇAS =================
 function loadFinancasData() {
-    const storageKey = `my_finances_data_${currentUser}`;
-    transactions = JSON.parse(localStorage.getItem(storageKey)) || [];
-    updateBalances();
-    renderList();
-}
-
-function formatCurrency(value) { return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-
-function updateBalances() {
-    let entries = 0, expenses = 0;
-    transactions.forEach(item => {
-        if (!item.completed) {
-            if (item.type === 'entrada') entries += item.value;
-            else expenses += item.value;
-        }
-    });
-    totalBalance.innerText = formatCurrency(entries - expenses);
-    totalEntries.innerText = formatCurrency(entries);
-    totalExpenses.innerText = formatCurrency(expenses);
-}
-
-function renderList() {
-    listContainer.innerHTML = '';
-    if (transactions.length === 0) {
-        listContainer.innerHTML = '<p style="text-align:center; color:#94a3b8; font-size:12px; padding:20px;">[SISTEMA_VAZIO]: SEM LANÇAMENTOS</p>';
-        return;
-    }
-    transactions.forEach((item, index) => {
-        const div = document.createElement('div');
-        div.classList.add('transaction-item', `item-${item.type}`);
-        if (item.completed) div.classList.add('completed');
-        div.addEventListener('click', () => toggleComplete(index));
-        div.innerHTML = `
-            <div class="item-left">
-                <div class="check-box">${item.completed ? '✓' : ''}</div>
-                <span class="item-info">${item.title}</span>
-            </div>
-            <span class="item-value">${item.type === 'entrada' ? '+' : '-'} ${formatCurrency(item.value)}</span>
-        `;
-        listContainer.appendChild(div);
-    });
-}
-
-function toggleComplete(index) {
-    transactions[index].completed = !transactions[index].completed;
-    saveFinancasData(); updateBalances(); renderList();
-}
-
-function addTransaction() {
-    const title = transTitleInput.value.trim();
-    const value = parseFloat(transValueInput.value);
-    const type = transTypeSelect.value;
-
-    if (!title || isNaN(value) || value <= 0) {
-        alert('OPERAÇÃO RECUSADA: DADOS INCORRETOS.');
-        return;
-    }
-    transactions.push({ title, value, type, completed: false });
-    transTitleInput.value = ''; transValueInput.value = '';
-    saveFinancasData(); updateBalances(); renderList();
+    const savedTrans = localStorage.getItem('sys_transactions');
+    transactions = savedTrans ? JSON.parse(savedTrans) : [];
+    renderFinancas();
 }
 
 function saveFinancasData() {
-    const storageKey = `my_finances_data_${currentUser}`;
-    localStorage.setItem(storageKey, JSON.stringify(transactions));
+    localStorage.setItem('sys_transactions', JSON.stringify(transactions));
+    renderFinancas();
 }
 
-btnSaveTransaction.addEventListener('click', addTransaction);
-btnClearTransactions.addEventListener('click', () => {
-    if (confirm('Deseja deletar permanentemente a tabela deste usuário?')) {
-        transactions = []; saveFinancasData(); updateBalances(); renderList();
+function renderFinancas() {
+    updateHeaderUsernames();
+    if (!listContainer) return;
+    listContainer.innerHTML = "";
+
+    let ent = 0; let sai = 0;
+
+    transactions.forEach((t) => {
+        const item = document.createElement('div');
+        item.style.padding = "10px";
+        item.style.borderBottom = "1px solid #2d3748";
+        item.style.display = "flex";
+        item.style.justifyContent = "space-between";
+        item.style.fontSize = "13px";
+
+        if (t.type === 'entrada') {
+            ent += t.value;
+            item.innerHTML = `<span>${t.title}</span> <span style="color:var(--color-success)">+ R$ ${t.value.toFixed(2)}</span>`;
+        } else {
+            sai += t.value;
+            item.innerHTML = `<span>${t.title}</span> <span style="color:var(--color-danger)">- R$ ${t.value.toFixed(2)}</span>`;
+        }
+        listContainer.appendChild(item);
+    });
+
+    const bal = ent - sai;
+    totalBalance.innerText = `R$ ${bal.toFixed(2)}`;
+    totalEntries.innerText = `R$ ${ent.toFixed(2)}`;
+    totalExpenses.innerText = `R$ ${sai.toFixed(2)}`;
+
+    if (bal >= 0) {
+        totalBalance.style.color = "var(--color-success)";
+    } else {
+        totalBalance.style.color = "var(--color-danger)";
     }
-});
+}
+
+if (btnSaveTransaction) {
+    btnSaveTransaction.addEventListener('click', () => {
+        const title = transTitleInput.value.trim();
+        const value = parseFloat(transValueInput.value);
+        const type = transTypeSelect.value;
+
+        if (!title || isNaN(value) || value <= 0) {
+            alert('Por favor, preencha todos os campos financeiros corretamente.');
+            return;
+        }
+
+        transactions.push({ title, value, type });
+        transTitleInput.value = ''; transValueInput.value = '';
+        saveFinancasData();
+    });
+}
+
+if (btnClearTransactions) {
+    btnClearTransactions.addEventListener('click', () => {
+        if (confirm('Tem certeza que deseja apagar todo o histórico financeiro?')) {
+            transactions = [];
+            saveFinancasData();
+        }
+    });
+}
 
 
-// ================= MÓDULO: ALMOXARIFADO (NOVA ENGINE DE ESTOQUE) =================
+// ================= MÓDULO ALMOXARIFADO =================
 function loadAlmoxarifadoData() {
-    const storageKey = `my_stock_data_${currentUser}`;
-    stockItems = JSON.parse(localStorage.getItem(storageKey)) || [];
+    const savedStock = localStorage.getItem('sys_stock_items');
+    stockItems = savedStock ? JSON.parse(savedStock) : [];
     renderStockTable();
 }
 
 function saveAlmoxarifadoData() {
-    const storageKey = `my_stock_data_${currentUser}`;
-    localStorage.setItem(storageKey, JSON.stringify(stockItems));
+    localStorage.setItem('sys_stock_items', JSON.stringify(stockItems));
+    renderStockTable();
 }
 
 function renderStockTable() {
+    updateHeaderUsernames();
     if (!stockTableBody) return;
-    stockTableBody.innerHTML = '';
+    stockTableBody.innerHTML = "";
 
     if (stockItems.length === 0) {
-        stockTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; font-size:12px; padding:20px;">[ALMOXARIFADO_VAZIO]: NENHUM PRODUTO REGISTRADO</td></tr>`;
+        stockTableBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-secondary); padding:20px;">Nenhum material registrado em estoque.</td></tr>`;
         return;
     }
 
     stockItems.forEach((item, index) => {
         const tr = document.createElement('tr');
-        
-        // Ativa classe crítica caso estoque esteja em níveis iguais ou inferiores ao mínimo
-        if (item.qty <= item.minQty) {
+        const isCritical = item.qty <= item.minQty;
+
+        if (isCritical) {
             tr.classList.add('stock-row-critical');
         }
 
         tr.innerHTML = `
-            <td><strong>#${index + 1}</strong></td>
-            <td>${item.name.toUpperCase()}</td>
-            <td>${item.qty} un</td>
-            <td>${item.minQty} un</td>
-            <td>
-                <button class="btn-stock-action" onclick="changeStockQty(${index}, 1)"><i class="fas fa-plus"></i> Entrada</button>
-                <button class="btn-stock-action" onclick="changeStockQty(${index}, -1)"><i class="fas fa-minus"></i> Baixa</button>
-                <button class="btn-stock-action btn-stock-danger" onclick="deleteStockItem(${index})"><i class="fas fa-trash"></i></button>
+            <td style="padding: 10px;"><strong>${item.name.toUpperCase()}</strong></td>
+            <td style="padding: 10px;">${item.qty} Unidades</td>
+            <td style="padding: 10px; color:#94a3b8;">${item.minQty} Unidades</td>
+            <td style="padding: 10px; text-align: right;">
+                <button class="btn-stock-action" onclick="changeStockQty(${index}, 1)"><i class="fas fa-plus"></i></button>
+                <button class="btn-stock-action" onclick="changeStockQty(${index}, -1)"><i class="fas fa-minus"></i></button>
+                <button class="btn-stock-action btn-stock-danger" style="background:#451a1a; border-color:#7f1d1d;" onclick="deleteStockItem(${index})"><i class="fas fa-trash"></i></button>
             </td>
         `;
         stockTableBody.appendChild(tr);
@@ -658,15 +617,14 @@ function addStockItem() {
     const qty = parseInt(prodQtyInput.value);
     const minQty = parseInt(prodMinInput.value);
 
-    if (!name || isNaN(qty) || qty < 0 || isNaN(minQty) || minQty < 0) {
-        alert('OPERAÇÃO RECUSADA: CERTIFIQUE-SE DE QUE OS VALORES SÃO VÁLIDOS E MAIORES OU IGUAIS A ZERO.');
+    if (!name || isNaN(qty) || isNaN(minQty) || qty < 0 || minQty < 0) {
+        alert('Por favor, insira as informações de inventário corretamente.');
         return;
     }
 
-    // Evita duplicações de nomes no estoque do mesmo operador
-    const existIndex = stockItems.findIndex(item => item.name.toLowerCase() === name.toLowerCase());
-    if (existIndex !== -1) {
-        alert('AVISO: Esse produto já existe. Utilize os botões de controle na tabela para ajustar o saldo.');
+    // Validação contra duplicações
+    if (stockItems.some(i => i.name.toLowerCase() === name.toLowerCase())) {
+        alert('SISTEMA: Este material já existe. Utilize os botões de controle na tabela para ajustar o saldo.');
         return;
     }
 
@@ -674,7 +632,6 @@ function addStockItem() {
     prodNameInput.value = ''; prodQtyInput.value = ''; prodMinInput.value = '';
     
     saveAlmoxarifadoData();
-    renderStockTable();
 }
 
 // Funções expostas globalmente (window) para responderem aos cliques em linhas da tabela de estoque
@@ -686,14 +643,12 @@ window.changeStockQty = function(index, amount) {
     }
     targetItem.qty += amount;
     saveAlmoxarifadoData();
-    renderStockTable();
 };
 
 window.deleteStockItem = function(index) {
     if (confirm(`Tem certeza que deseja remover o produto "${stockItems[index].name.toUpperCase()}" do almoxarifado?`)) {
         stockItems.splice(index, 1);
         saveAlmoxarifadoData();
-        renderStockTable();
     }
 };
 
@@ -701,14 +656,8 @@ if (btnSaveProduct) {
     btnSaveProduct.addEventListener('click', addStockItem);
 }
 
-
-// ================= CONTROLE GLOBAL DE LOGIN POR EVENTO =================
-passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
-btnLogin.addEventListener('click', handleLogin);
-
-// Inicialização do Sistema do Gate de segurança
-if (currentUser) {
-    showScreen(screenMenu); renderMenu();
-} else {
-    showScreen(screenLogin);
+// Inicializar aplicação caso usuário já esteja logado em sessão ativa na mesma aba
+if (currentUser && usersDB[currentUser]) {
+    showScreen(screenMenu);
+    renderMenu();
 }
