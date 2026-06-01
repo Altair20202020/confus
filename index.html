@@ -3,295 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise OS - Architecture</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-</head>
-<body class="dark-theme">
-    <div class="main-wrapper">
+    <title>Enterprise OS - Terminal Corporativo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Variáveis de Cores - Tema Dark Cyberpunk / Corporativo */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #131c2e;
+            --bg-input: #1e293b;
+            --color-primary: #38bdf8;
+            --color-success: #10b981;
+            --color-danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .hidden { display: none !important; }
+
+        /* Estilização Geral de Telas/Containers */
+        .screen-container { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; width: 100%; max-width: 480px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .screen-container.wide { max-width: 800px; }
+
+        h2 { font-size: 22px; color: var(--color-primary); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        h3 { font-size: 16px; margin-bottom: 15px; color: var(--text-main); border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        p { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+
+        /* Formulários e Inputs */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; text-transform: uppercase; margin-bottom: 5px; color: var(--text-secondary); }
+        .input-control { width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 14px; outline: none; transition: border 0.3s; }
+        .input-control:focus { border-color: var(--color-primary); }
         
-        <div class="login-split-container" id="login-screen">
-            <div class="login-branding-side">
-                <div class="branding-overlay"></div>
-                <div class="branding-content">
-                    <div class="brand-badge"><i class="fas fa-cubes"></i> ENTERPRISE_OS</div>
-                    <h2>Gerencie toda a sua operação em um único ecossistema integrado.</h2>
-                    <p>Alta performance, controle absoluto de dados e módulos inteligentes criados para escalar o seu negócio.</p>
-                </div>
-            </div>
+        /* Checkboxes Personalizados */
+        .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin: 15px 0; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); }
+        .checkbox-item { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+        .checkbox-item input { width: 16px; height: 16px; accent-color: var(--color-primary); }
 
-            <div class="login-form-side">
-                <div class="login-form-wrapper">
-                    <div class="login-form-header">
-                        <h2>Seja bem-vindo</h2>
-                        <p>Insira suas credenciais para acessar a sua área de trabalho</p>
-                    </div>
+        /* Botões */
+        .btn-sys { width: 100%; background-color: var(--color-primary); color: #000; border: none; border-radius: 6px; padding: 12px; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: opacity 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-sys:hover { opacity: 0.9; }
+        .btn-sys-danger { background-color: var(--color-danger); color: white; }
+        .btn-back { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); margin-top: 15px; }
+        .btn-back:hover { background-color: rgba(255,255,255,0.05); color: #fff; }
 
-                    <div class="form-group">
-                        <div class="modern-input-group">
-                            <input type="text" id="login-username" required placeholder=" ">
-                            <label for="login-username">Usuário</label>
-                            <span class="input-line"></span>
-                        </div>
-                        
-                        <div class="modern-input-group">
-                            <input type="password" id="login-password" required placeholder=" ">
-                            <label for="login-password">Senha de Acesso</label>
-                            <span class="input-line"></span>
-                        </div>
-                        
-                        <button id="btn-login" class="btn-sys-modern">
-                            <span>Acessar Plataforma</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                        
-                        <p id="login-error" class="error-msg"></p>
+        /* Links de Alternância */
+        .switch-link-container { margin-top: 20px; text-align: center; font-size: 13px; }
+        .switch-link-container a { color: var(--color-primary); text-decoration: none; font-weight: bold; }
+        .switch-link-container a:hover { text-decoration: underline; }
 
-                        <div class="login-extra-links">
-                            <span>Não tem uma conta? <a href="#" id="link-go-register">Solicitar Acesso</a></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        /* Erros e Alertas */
+        .error-message { color: var(--color-danger); font-size: 12px; font-weight: bold; margin-top: 5px; min-height: 18px; text-align: center; }
+
+        /* Layout do Menu (Dashboard Principal) */
+        .header-dash { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px; }
+        .user-badge { font-size: 13px; background: rgba(56, 189, 248, 0.1); border: 1px solid var(--color-primary); padding: 5px 10px; border-radius: 20px; color: var(--color-primary); font-family: monospace; }
+        .btn-logout { background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 16px; }
+
+        .modules-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        @media(min-width: 480px) { .modules-grid { grid-template-columns: 1fr 1fr; } }
+        
+        .module-card { background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; cursor: pointer; transition: transform 0.2s, border-color 0.2s; position: relative; display: flex; flex-direction: column; gap: 10px; }
+        .module-card:hover { transform: translateY(-2px); border-color: var(--color-primary); }
+        .module-card i { font-size: 24px; color: var(--color-primary); }
+        .module-card h4 { font-size: 16px; }
+        .badge-permission { font-size: 10px; font-family: monospace; border: 1px solid; padding: 2px 6px; border-radius: 4px; width: max-content; }
+
+        /* Painel Administrativo / Cards de Requisição */
+        .admin-search-box { display: flex; gap: 10px; margin-bottom: 20px; }
+        .request-card { background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; margin-bottom: 12px; }
+        .request-card-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; }
+        .request-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .request-actions button { flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .btn-approve { background-color: var(--color-success); color: #000; }
+        .btn-deny { background-color: var(--color-danger); color: #fff; }
+
+        /* Módulo de Finanças Original */
+        .fin-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .summary-box { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 10px; border-radius: 6px; text-align: center; }
+        .summary-box span { display: block; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; }
+        .summary-box strong { font-size: 14px; font-family: monospace; }
+        .box-balance { border-color: var(--color-primary); color: var(--color-primary); }
+        .box-entries { border-color: var(--color-success); color: var(--color-success); }
+        .box-expenses { border-color: var(--color-danger); color: var(--color-danger); }
+        
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
+        .item-left { display: flex; align-items: center; gap: 10px; }
+        .check-box { width: 18px; height: 18px; border: 1px solid var(--border-color); border-radius: 4px; display: flex; justify-content: center; align-items: center; font-size: 12px; color: var(--color-success); font-weight: bold; }
+        .transaction-item.completed { opacity: 0.5; }
+        .transaction-item.completed .check-box { background: rgba(16, 185, 129, 0.2); border-color: var(--color-success); }
+        .item-entrada .item-value { color: var(--color-success); }
+        .item-saida .item-value { color: var(--color-danger); }
+        #list-container { max-height: 180px; overflow-y: auto; margin-top: 15px; border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="screen-container">
+        <h2><i class="fas fa-terminal"></i> Enterprise OS</h2>
+        <p>Insira suas credenciais corporativas criptografadas para acessar o terminal.</p>
+        
+        <div class="form-group">
+            <label>ID do Operador</label>
+            <input type="text" id="login-username" class="input-control" placeholder="Ex: altair">
         </div>
-
-        <div class="login-split-container hidden" id="register-screen">
-            <div class="login-form-side" style="border-left: none; border-right: 1px solid #1f2230;">
-                <div class="login-form-wrapper">
-                    <div class="login-form-header">
-                        <h2>Solicitar Acesso</h2>
-                        <p>Preencha os dados abaixo. Sua solicitação será avaliada pela administração.</p>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="modern-input-group">
-                            <input type="text" id="reg-username" required placeholder=" ">
-                            <label for="reg-username">Nome de Usuário (Login)</label>
-                            <span class="input-line"></span>
-                        </div>
-
-                        <div class="modern-input-group">
-                            <input type="email" id="reg-email" required placeholder=" ">
-                            <label for="reg-email">E-mail Corporativo</label>
-                            <span class="input-line"></span>
-                        </div>
-
-                        <div class="modules-requested-box">
-                            <label class="box-title"><i class="fas fa-layer-group"></i> Módulos Pretendidos:</label>
-                            <div class="checkbox-option">
-                                <input type="checkbox" id="reg-req-financas">
-                                <label for="reg-req-financas">Módulo de Finanças</label>
-                            </div>
-                            <div class="checkbox-option">
-                                <input type="checkbox" id="reg-req-almoxarifado">
-                                <label for="reg-req-almoxarifado">Módulo de Almoxarifado</label>
-                            </div>
-                            <div class="checkbox-option">
-                                <input type="checkbox" id="reg-req-manutencao">
-                                <label for="reg-req-manutencao">Módulo de Manutenção</label>
-                            </div>
-                        </div>
-                        
-                        <button id="btn-send-request" class="btn-sys-modern">
-                            <span>Enviar Solicitação</span>
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                        
-                        <div class="login-extra-links">
-                            <span>Já tem cadastro? <a href="#" id="link-back-login">Voltar ao Login</a></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="login-branding-side">
-                <div class="branding-overlay" style="background: linear-gradient(135deg, rgba(10, 11, 16, 0.95) 0%, rgba(0, 255, 136, 0.15) 100%);"></div>
-                <div class="branding-content">
-                    <div class="brand-badge"><i class="fas fa-shield-alt"></i> SECURITY_GATEWAY</div>
-                    <h2>Controle rígido de acessos e diretivas de segurança.</h2>
-                    <p>Novas contas passam por triagem e auditoria antes da liberação de chaves criptográficas de cripto-transações.</p>
-                </div>
-            </div>
+        <div class="form-group">
+            <label>Chave de Acesso</label>
+            <input type="password" id="login-password" class="input-control" placeholder="••••••••">
         </div>
+        <button id="btn-login" class="btn-sys"><i class="fas fa-sign-in-alt"></i> Autenticar no Sistema</button>
+        <div id="login-error" class="error-message"></div>
 
-        <div class="login-split-container hidden" id="force-password-screen">
-            <div class="login-form-side" style="flex: 1; max-width: 500px; margin: 0 auto;">
-                <div class="login-form-wrapper">
-                    <div class="login-form-header">
-                        <h2><i class="fas fa-key" style="color: var(--color-primary)"></i> Primeiro Acesso</h2>
-                        <p>Por segurança, você deve alterar a sua senha temporária para prosseguir.</p>
-                    </div>
-
-                    <div class="form-group">
-                        <div class="modern-input-group">
-                            <input type="password" id="force-new-password" required placeholder=" ">
-                            <label for="force-new-password">Nova Senha Definitiva</label>
-                            <span class="input-line"></span>
-                        </div>
-                        <div class="modern-input-group">
-                            <input type="password" id="force-confirm-password" required placeholder=" ">
-                            <label for="force-confirm-password">Confirme a Nova Senha</label>
-                            <span class="input-line"></span>
-                        </div>
-
-                        <button id="btn-change-password-submit" class="btn-sys-modern">
-                            <span>Salvar Nova Senha e Entrar</span>
-                            <i class="fas fa-check-circle"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="switch-link-container">
+            Novo na empresa? <a href="#" id="link-go-register">Solicitar Acesso</a>
         </div>
-
-        <div class="menu-container hidden" id="menu-screen">
-            <header class="system-header">
-                <div class="header-left">
-                    <i class="fas fa-cubes system-logo"></i>
-                    <h1>MAIN_MENU // ENTERPRISE_OS</h1>
-                </div>
-                <div class="header-right">
-                    <span class="user-badge"><i class="fas fa-user-shield"></i> <span class="user-placeholder-name">USER</span></span>
-                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
-                </div>
-            </header>
-
-            <div class="modules-grid">
-                <div class="module-card" id="mod-financas" data-module="financas">
-                    <i class="fas fa-wallet mod-icon"></i>
-                    <h3>FINANÇAS</h3>
-                    <p>Controle de fluxo de caixa, despesas e relatórios.</p>
-                    <span class="badge-permission">Acesso Restrito</span>
-                </div>
-                <div class="module-card disabled" id="mod-almoxarifado" data-module="almoxarifado">
-                    <i class="fas fa-boxes-stacked mod-icon"></i>
-                    <h3>ALMOXARIFADO</h3>
-                    <p>Módulo em desenvolvimento (Bloqueado).</p>
-                    <span class="badge-permission">Indisponível</span>
-                </div>
-                <div class="module-card disabled" id="mod-manutencao" data-module="manutencao">
-                    <i class="fas fa-tools mod-icon"></i>
-                    <h3>MANUTENÇÃO</h3>
-                    <p>Módulo em desenvolvimento (Bloqueado).</p>
-                    <span class="badge-permission">Indisponível</span>
-                </div>
-                <div class="module-card admin-only hidden" id="mod-admin" data-module="admin">
-                    <i class="fas fa-sliders-h mod-icon"></i>
-                    <h3>PAINEL ADMIN</h3>
-                    <p>Gerenciamento de usuários e permissões do sistema.</p>
-                    <span class="badge-permission badge-admin">Master</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="container hidden" id="admin-panel">
-            <header class="system-header">
-                <div class="header-left">
-                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
-                    <h1>ADMIN_CONTROL_CENTER</h1>
-                </div>
-                <div class="header-right">
-                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
-                </div>
-            </header>
-
-            <main class="admin-content sys-box" style="margin-bottom: 20px;">
-                <div class="box-header" style="background-color: #1a1d29;">
-                    <h2><i class="fas fa-bell"></i> SOLICITAÇÕES DE CADASTRO PENDENTES</h2>
-                </div>
-                <div class="admin-workspace" id="admin-requests-container">
-                    </div>
-            </main>
-
-            <main class="admin-content sys-box">
-                <div class="box-header">
-                    <h2><i class="fas fa-users-cog"></i> GERENCIAR PERMISSÕES EXISTENTES</h2>
-                </div>
-                <div class="admin-workspace">
-                    <div class="search-box-wrapper">
-                        <input type="text" id="admin-search-user" placeholder="Pesquise o nome do usuário (Ex: altair, meli)">
-                        <button id="btn-search-user" class="btn-sys-primary"><i class="fas fa-search"></i> BUSCAR</button>
-                    </div>
-
-                    <div id="admin-user-permissions-card" class="permissions-editor hidden">
-                        <h3 id="editing-user-title">Editando: USUARIO</h3>
-                        
-                        <div class="permission-row">
-                            <label>Módulo Finanças</label>
-                            <input type="checkbox" id="perm-financas">
-                        </div>
-                        <div class="permission-row">
-                            <label>Módulo Almoxarifado (Futuro)</label>
-                            <input type="checkbox" id="perm-almoxarifado">
-                        </div>
-                        <div class="permission-row">
-                            <label>Módulo Manutenção (Futuro)</label>
-                            <input type="checkbox" id="perm-manutencao">
-                        </div>
-                        
-                        <button id="btn-save-permissions" class="btn-sys-primary" style="margin-top: 15px;">
-                            <i class="fas fa-save"></i> SALVAR PERMISSÕES
-                        </button>
-                    </div>
-                </div>
-            </main>
-        </div>
-
-        <div class="container hidden" id="system-dashboard">
-            <header class="system-header">
-                <div class="header-left">
-                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
-                    <h1>MODULO_FINANÇAS</h1>
-                </div>
-                <div class="header-right">
-                    <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">USER</span></span>
-                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
-                </div>
-            </header>
-
-            <section class="dashboard-grid">
-                <div class="balance-card main-balance">
-                    <div class="card-header"><h3>SALDO_DISPONÍVEL</h3><i class="fas fa-sack-dollar"></i></div>
-                    <p class="balance-value" id="total-balance">R$ 0,00</p>
-                </div>
-                <div class="mini-cards-wrapper">
-                    <div class="card entrada">
-                        <div class="card-info"><h3>ENTRADAS_TOTAIS</h3><p id="total-entries">R$ 0,00</p></div>
-                        <i class="fas fa-arrow-trend-up icon-entries"></i>
-                    </div>
-                    <div class="card saida">
-                        <div class="card-info"><h3>DÍVIDAS_ATIVAS</h3><p id="total-expenses">R$ 0,00</p></div>
-                        <i class="fas fa-arrow-trend-down icon-expenses"></i>
-                    </div>
-                </div>
-            </section>
-
-            <main class="control-panel">
-                <section class="form-section sys-box">
-                    <div class="box-header"><h2><i class="fas fa-plus-circle"></i> NOVO_REGISTRO</h2></div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="trans-title" placeholder="Ex: Mercado, Salário">
-                        <label>Valor (R$)</label>
-                        <input type="number" id="trans-value" placeholder="0,00">
-                        <label>Tipo de Fluxo</label>
-                        <select id="trans-type">
-                            <option value="entrada">ENTRADA (+)</option>
-                            <option value="saida">DÍVIDA / GASTO (-)</option>
-                        </select>
-                        <button id="btn-save" class="btn-sys-primary"><i class="fas fa-save"></i> PROCESSAR</button>
-                    </div>
-                </section>
-
-                <section class="history-section sys-box">
-                    <div class="box-header history-header">
-                        <h2><i class="fas fa-list-ul"></i> REGISTROS_DO_SISTEMA</h2>
-                        <button class="btn-sys-danger" id="btn-clear"><i class="fas fa-trash-alt"></i> PURGE_DATA</button>
-                    </div>
-                    <div class="transaction-list" id="list-container"></div>
-                </section>
-            </main>
-        </div>
-
     </div>
+
+    <div id="register-screen" class="screen-container hidden">
+        <h2><i class="fas fa-user-plus"></i> Solicitar Acesso</h2>
+        <p>Preencha os dados abaixo. Sua conta será avaliada por um administrador antes da liberação.</p>
+        
+        <div class="form-group">
+            <label>ID de Usuário Pretendido</label>
+            <input type="text" id="reg-username" class="input-control" placeholder="Ex: jorge_user">
+        </div>
+        <div class="form-group">
+            <label>E-mail Corporativo Real</label>
+            <input type="email" id="reg-email" class="input-control" placeholder="Ex: jorge@empresa.com">
+        </div>
+        
+        <label>Módulos Requeridos</label>
+        <div class="checkbox-group">
+            <label class="checkbox-item"><input type="checkbox" id="reg-req-financas"> Módulo 01: Finanças Corporativas</label>
+            <label class="checkbox-item"><input type="checkbox" id="reg-req-almoxarifado"> Módulo 02: Almoxarifado Central</label>
+            <label class="checkbox-item"><input type="checkbox" id="reg-req-manutencao"> Módulo 03: Manutenção Técnica</label>
+        </div>
+
+        <button id="btn-send-request" class="btn-sys"><i class="fas fa-paper-plane"></i> Protocolar Solicitação</button>
+        <button class="btn-sys btn-back" id="link-back-login">Voltar ao Login</button>
+    </div>
+
+    <div id="force-password-screen" class="screen-container hidden">
+        <h2><i class="fas fa-shield-alt"></i> Segurança Crítica</h2>
+        <p>Identificamos que este é seu primeiro acesso com uma credencial temporária. Defina sua chave permanente.</p>
+        
+        <div class="form-group">
+            <label>Nova Senha Definitiva</label>
+            <input type="password" id="force-new-password" class="input-control" placeholder="Digite a nova senha">
+        </div>
+        <div class="form-group">
+            <label>Confirme a Nova Senha</label>
+            <input type="password" id="force-confirm-password" class="input-control" placeholder="Repita a nova senha">
+        </div>
+
+        <button id="btn-change-password-submit" class="btn-sys"><i class="fas fa-check-shield"></i> Atualizar e Acessar</button>
+    </div>
+
+    <div id="menu-screen" class="screen-container wide hidden">
+        <div class="header-dash">
+            <h2><i class="fas fa-cubes"></i> Módulos do Sistema</h2>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">---</span></span>
+                <button class="btn-logout btn-trigger-logout" title="Desconectar Terminal"><i class="fas fa-power-off"></i></button>
+            </div>
+        </div>
+        <p>Selecione uma das diretrizes operacionais abaixo conforme sua liberação de credenciais:</p>
+
+        <div class="modules-grid">
+            <div class="module-card admin-only hidden" id="mod-admin" data-module="admin">
+                <i class="fas fa-user-shield" style="color: #a855f7;"></i>
+                <h4>Controle Administrativo</h4>
+                <div class="badge-permission" style="color: #a855f7; border-color: #a855f7;">RAIZ_DO_SISTEMA</div>
+            </div>
+
+            <div class="module-card" data-module="financas">
+                <i class="fas fa-wallet"></i>
+                <h4>Finanças Estruturais</h4>
+                <div class="badge-permission">VERIFICANDO...</div>
+            </div>
+
+            <div class="module-card" data-module="almoxarifado">
+                <i class="fas fa-boxes-stacked"></i>
+                <h4>Almoxarifado Central</h4>
+                <div class="badge-permission">VERIFICANDO...</div>
+            </div>
+
+            <div class="module-card" data-module="manutencao">
+                <i class="fas fa-screwdriver-wrench"></i>
+                <h4>Manutenção de Ativos</h4>
+                <div class="badge-permission">VERIFICANDO...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="system-dashboard" class="screen-container wide hidden">
+        <div class="header-dash">
+            <h2><i class="fas fa-wallet"></i> Balanço Financeiro</h2>
+            <span class="user-badge"><span class="user-placeholder-name">---</span></span>
+        </div>
+
+        <div class="fin-summary">
+            <div class="summary-box box-balance"><span>Saldo Geral</span><strong id="total-balance">R$ 0,00</strong></div>
+            <div class="summary-box box-entries"><span>Entradas</span><strong id="total-entries">R$ 0,00</strong></div>
+            <div class="summary-box box-expenses"><span>Saídas</span><strong id="total-expenses">R$ 0,00</strong></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 20px;" class="fin-layout-grid">
+            <div>
+                <h3><i class="fas fa-plus-circle"></i> Novo Lançamento</h3>
+                <div class="form-group" style="margin-top:10px;">
+                    <label>Título da Transação</label>
+                    <input type="text" id="trans-title" class="input-control" placeholder="Ex: NF-204 Fornecedor">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <div class="form-group" style="flex:2;">
+                        <label>Valor (R$)</label>
+                        <input type="number" step="0.01" id="trans-value" class="input-control" placeholder="0.00">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label>Fluxo</label>
+                        <select id="trans-type" class="input-control" style="padding:11px;">
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="btn-save" class="btn-sys"><i class="fas fa-check"></i> Processar Lançamento</button>
+                <button id="btn-clear" class="btn-sys btn-sys-danger" style="margin-top:10px;"><i class="fas fa-trash-alt"></i> Limpar Histórico</button>
+            </div>
+            <div>
+                <h3><i class="fas fa-list"></i> Registro de Atividades</h3>
+                <div id="list-container"></div>
+            </div>
+        </div>
+        <button class="btn-sys btn-back"><i class="fas fa-arrow-left"></i> Voltar ao Menu</button>
+    </div>
+
+    <div id="admin-panel" class="screen-container wide hidden">
+        <div class="header-dash">
+            <h2><i class="fas fa-user-shield"></i> Painel Geral de Governança</h2>
+            <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i></button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr; gap: 25px;">
+            <div>
+                <h3><i class="fas fa-user-gear"></i> Moderação de Operadores Actives</h3>
+                <p style="font-size:12px; margin-bottom:10px;">Busque o ID de um operador para gerenciar permissões, bloqueá-lo ou excluí-lo:</p>
+                <div class="admin-search-box">
+                    <input type="text" id="admin-search-user" class="input-control" placeholder="Ex: meli">
+                    <button id="btn-search-user" class="btn-sys" style="width: auto; padding: 0 20px;"><i class="fas fa-search"></i> Buscar</button>
+                </div>
+
+                <div id="admin-user-permissions-card" class="checkbox-group hidden" style="background: rgba(255,255,255,0.03);">
+                    <strong id="editing-user-title" style="color:var(--color-primary); font-size:13px; display:block; margin-bottom:10px;">Editando Operador</strong>
+                    <label class="checkbox-item"><input type="checkbox" id="perm-financas"> Módulo Finanças</label>
+                    <label class="checkbox-item"><input type="checkbox" id="perm-almoxarifado"> Módulo Almoxarifado</label>
+                    <label class="checkbox-item"><input type="checkbox" id="perm-manutencao"> Módulo Manutenção</label>
+                    <button id="btn-save-permissions" class="btn-sys" style="margin-top:15px; background-color: var(--color-success); color:#000;"><i class="fas fa-save"></i> Gravar Novas Diretivas</button>
+                </div>
+            </div>
+
+            <div>
+                <h3><i class="fas fa-clock"></i> Solicitações Pendentes de Análise</h3>
+                <div id="admin-requests-container">
+                    </div>
+            </div>
+        </div>
+        <button class="btn-sys btn-back" style="margin-top:20px;"><i class="fas fa-arrow-left"></i> Voltar ao Menu</button>
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          // IMPORTANTE: Insira sua chave pública aqui para ativar os disparos reais
+          emailjs.init("SUA_PUBLIC_KEY_AQUI"); 
+       })();
+    </script>
+
     <script src="script.js"></script>
 </body>
 </html>
