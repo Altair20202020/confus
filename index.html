@@ -3,59 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Controle Financeiro</title>
+    <title>Finance PRO - Dark System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1 id="app-title" contenteditable="true" title="Clique para mudar o título">Minhas Finanças 💰</h1>
-            <p class="welcome">Toque no título acima para personalizar o nome</p>
-        </header>
+<body class="dark-theme">
+    <div class="main-wrapper">
+        <div class="container">
+            <header class="system-header">
+                <div class="header-left">
+                    <i class="fas fa-wallet system-logo"></i>
+                    <h1 id="app-title" contenteditable="true">FINANCE_PRO</h1>
+                </div>
+                <p class="system-status">SYS_STATUS: <span class="status-ok">ONLINE</span></p>
+            </header>
 
-        <div class="balance-card">
-            <h3>Saldo Atual</h3>
-            <p class="balance-value" id="total-balance">R$ 0,00</p>
+            <section class="dashboard-grid">
+                <div class="balance-card main-balance">
+                    <div class="card-header">
+                        <h3>SALDO_DISPONÍVEL</h3>
+                        <i class="fas fa-sack-dollar"></i>
+                    </div>
+                    <p class="balance-value" id="total-balance">R$ 0,00</p>
+                </div>
+                
+                <div class="mini-cards-wrapper">
+                    <div class="card entrada">
+                        <div class="card-info">
+                            <h3>ENTRADAS_TOTAIS</h3>
+                            <p id="total-entries">R$ 0,00</p>
+                        </div>
+                        <i class="fas fa-arrow-trend-up icon-entries"></i>
+                    </div>
+                    <div class="card saida">
+                        <div class="card-info">
+                            <h3>DÍVIDAS_ATIVAS</h3>
+                            <p id="total-expenses">R$ 0,00</p>
+                        </div>
+                        <i class="fas fa-arrow-trend-down icon-expenses"></i>
+                    </div>
+                </div>
+            </section>
+
+            <main class="control-panel">
+                <section class="form-section sys-box">
+                    <div class="box-header">
+                        <h2><i class="fas fa-plus-circle"></i> NOVO_REGISTRO</h2>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="trans-title" placeholder="Ex: Mercado, Salário">
+                        
+                        <label>Valor (R$)</label>
+                        <input type="number" id="trans-value" placeholder="0,00">
+                        
+                        <label>Tipo de Fluxo</label>
+                        <select id="trans-type">
+                            <option value="entrada">ENTRADA (+)</option>
+                            <option value="saida">DÍVIDA / GASTO (-)</option>
+                        </select>
+                        
+                        <button id="btn-save" class="btn-sys-primary">
+                            <i class="fas fa-save"></i> PROCESSAR
+                        </button>
+                    </div>
+                </section>
+
+                <section class="history-section sys-box">
+                    <div class="box-header history-header">
+                        <h2><i class="fas fa-list-ul"></i> REGISTROS_DO_SISTEMA</h2>
+                        <button class="btn-sys-danger" id="btn-clear">
+                            <i class="fas fa-trash-alt"></i> PURGE_DATA
+                        </button>
+                    </div>
+                    <div class="transaction-list" id="list-container">
+                        </div>
+                </section>
+            </main>
         </div>
-        
-        <div class="cards-grid">
-            <div class="card entrada">
-                <div class="card-icon">🔼</div>
-                <div>
-                    <h3>Entradas</h3>
-                    <p id="total-entries">R$ 0,00</p>
-                </div>
-            </div>
-            <div class="card saida">
-                <div class="card-icon">🔽</div>
-                <div>
-                    <h3>Saídas/Dívidas</h3>
-                    <p id="total-expenses">R$ 0,00</p>
-                </div>
-            </div>
-        </div>
-
-        <section class="form-section">
-            <h2>Novo Registro</h2>
-            <div class="form-group">
-                <input type="text" id="trans-title" placeholder="Ex: Salário, Parcela Moto, Mercado">
-                <input type="number" id="trans-value" placeholder="Valor (R$)">
-                <select id="trans-type">
-                    <option value="entrada">Entrada (+)</option>
-                    <option value="saida">Dívida / Gasto (-)</option>
-                </select>
-                <button id="btn-save" class="btn-add">Adicionar</button>
-            </div>
-        </section>
-
-        <section class="history-section">
-            <div class="section-header">
-                <h2>Suas Contas e Dívidas</h2>
-                <span class="clear-all" id="btn-clear" title="Apagar tudo e recomeçar">Resetar</span>
-            </div>
-            <div class="transaction-list" id="list-container">
-                </div>
-        </section>
     </div>
 
     <script src="script.js"></script>
