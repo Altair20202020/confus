@@ -46,6 +46,97 @@
                         </button>
                         
                         <p id="login-error" class="error-msg"></p>
+
+                        <div class="login-extra-links">
+                            <span>Não tem uma conta? <a href="#" id="link-go-register">Solicitar Acesso</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-split-container hidden" id="register-screen">
+            <div class="login-form-side" style="border-left: none; border-right: 1px solid #1f2230;">
+                <div class="login-form-wrapper">
+                    <div class="login-form-header">
+                        <h2>Solicitar Acesso</h2>
+                        <p>Preencha os dados abaixo. Sua solicitação será avaliada pela administração.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="modern-input-group">
+                            <input type="text" id="reg-username" required placeholder=" ">
+                            <label for="reg-username">Nome de Usuário (Login)</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <div class="modern-input-group">
+                            <input type="email" id="reg-email" required placeholder=" ">
+                            <label for="reg-email">E-mail Corporativo</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <div class="modules-requested-box">
+                            <label class="box-title"><i class="fas fa-layer-group"></i> Módulos Pretendidos:</label>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-financas">
+                                <label for="reg-req-financas">Módulo de Finanças</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-almoxarifado">
+                                <label for="reg-req-almoxarifado">Módulo de Almoxarifado</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-manutencao">
+                                <label for="reg-req-manutencao">Módulo de Manutenção</label>
+                            </div>
+                        </div>
+                        
+                        <button id="btn-send-request" class="btn-sys-modern">
+                            <span>Enviar Solicitação</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        
+                        <div class="login-extra-links">
+                            <span>Já tem cadastro? <a href="#" id="link-back-login">Voltar ao Login</a></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-branding-side">
+                <div class="branding-overlay" style="background: linear-gradient(135deg, rgba(10, 11, 16, 0.95) 0%, rgba(0, 255, 136, 0.15) 100%);"></div>
+                <div class="branding-content">
+                    <div class="brand-badge"><i class="fas fa-shield-alt"></i> SECURITY_GATEWAY</div>
+                    <h2>Controle rígido de acessos e diretivas de segurança.</h2>
+                    <p>Novas contas passam por triagem e auditoria antes da liberação de chaves criptográficas de cripto-transações.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="login-split-container hidden" id="force-password-screen">
+            <div class="login-form-side" style="flex: 1; max-width: 500px; margin: 0 auto;">
+                <div class="login-form-wrapper">
+                    <div class="login-form-header">
+                        <h2><i class="fas fa-key" style="color: var(--color-primary)"></i> Primeiro Acesso</h2>
+                        <p>Por segurança, você deve alterar a sua senha temporária para prosseguir.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="modern-input-group">
+                            <input type="password" id="force-new-password" required placeholder=" ">
+                            <label for="force-new-password">Nova Senha Definitiva</label>
+                            <span class="input-line"></span>
+                        </div>
+                        <div class="modern-input-group">
+                            <input type="password" id="force-confirm-password" required placeholder=" ">
+                            <label for="force-confirm-password">Confirme a Nova Senha</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <button id="btn-change-password-submit" class="btn-sys-modern">
+                            <span>Salvar Nova Senha e Entrar</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -102,9 +193,17 @@
                 </div>
             </header>
 
+            <main class="admin-content sys-box" style="margin-bottom: 20px;">
+                <div class="box-header" style="background-color: #1a1d29;">
+                    <h2><i class="fas fa-bell"></i> SOLICITAÇÕES DE CADASTRO PENDENTES</h2>
+                </div>
+                <div class="admin-workspace" id="admin-requests-container">
+                    </div>
+            </main>
+
             <main class="admin-content sys-box">
                 <div class="box-header">
-                    <h2><i class="fas fa-users-cog"></i> GERENCIAR_PERMISSOES_DE_USUARIOS</h2>
+                    <h2><i class="fas fa-users-cog"></i> GERENCIAR PERMISSÕES EXISTENTES</h2>
                 </div>
                 <div class="admin-workspace">
                     <div class="search-box-wrapper">
