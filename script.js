@@ -18,7 +18,7 @@ let currentUser = sessionStorage.getItem('logged_user') || null;
 let currentActiveModule = null;
 let transactions = [];
 let stockItems = []; 
-let stockLogs = []; // Banco de dados do log de auditoria
+let stockLogs = [];
 let userPendingPasswordForce = null; 
 
 // Seleção de Telas Principais
@@ -282,7 +282,7 @@ function renderAdminRequests() {
             const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
             const req = requestsDB[idx];
             usersDB[req.username] = {
-                password: "123", // Padrão simples simulado
+                password: "123", 
                 displayName: req.username.toUpperCase() + "_USER",
                 isAdmin: false, isTemporary: false, isBlocked: false, email: req.email,
                 permissions: { financas: req.permissions.financas, almoxarifado: req.permissions.almoxarifado, manutencao: req.permissions.manutencao }
@@ -393,10 +393,15 @@ if (btnSaveTransaction) {
 }
 
 
-// ================= MÓDULO ALMOXARIFADO AVANÇADO =================
+// ================= MÓDULO ALMOXARIFADO AVANÇADO CORRIGIDO =================
 function loadAlmoxarifadoData() {
     stockItems = JSON.parse(localStorage.getItem('sys_stock_items')) || [];
     stockLogs = JSON.parse(localStorage.getItem('sys_stock_logs')) || [];
+    
+    // Força os campos de filtro a iniciarem limpos para não sumir com a renderização inicial
+    if (stockSearchInput) stockSearchInput.value = "";
+    if (stockFilterSelect) stockFilterSelect.value = "all";
+
     renderStockTable();
     renderStockKPIs();
     renderAuditLogs();
@@ -414,17 +419,28 @@ function addLog(action, message) {
     const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     const operator = usersDB[currentUser]?.displayName || "SISTEMA";
     stockLogs.unshift({ time, operator, action, message });
-    if(stockLogs.length > 30) stockLogs.pop(); // Limita tamanho da auditoria
+    if(stockLogs.length > 30) stockLogs.pop();
 }
 
 function renderStockKPIs() {
     let totalItems = stockItems.length;
-    let valuation = stockItems.reduce((acc, curr) => acc + (curr.qty * curr.cost), 0);
-    let alerts = stockItems.filter(item => item.qty <= item.minQty).length;
+    
+    // Redutor corrigido com parse numérico explícito para evitar problemas de string/soma zerada
+    let valuation = stockItems.reduce((acc, curr) => {
+        const itemQty = parseInt(curr.qty) || 0;
+        const itemCost = parseFloat(curr.cost) || 0;
+        return acc + (itemQty * itemCost);
+    }, 0);
 
-    document.getElementById('kpi-total-items').innerText = totalItems;
-    document.getElementById('kpi-total-valuation').innerText = `R$ ${valuation.toFixed(2)}`;
-    document.getElementById('kpi-critical-alerts').innerText = alerts;
+    let alerts = stockItems.filter(item => (parseInt(item.qty) || 0) <= (parseInt(item.minQty) || 0)).length;
+
+    const kpiTotalItems = document.getElementById('kpi-total-items');
+    const kpiTotalValuation = document.getElementById('kpi-total-valuation');
+    const kpiCriticalAlerts = document.getElementById('kpi-critical-alerts');
+
+    if (kpiTotalItems) kpiTotalItems.innerText = totalItems;
+    if (kpiTotalValuation) kpiTotalValuation.innerText = `R$ ${valuation.toFixed(2)}`;
+    if (kpiCriticalAlerts) kpiCriticalAlerts.innerText = alerts;
 }
 
 function renderAuditLogs() {
@@ -448,13 +464,17 @@ function renderStockTable() {
     if (!stockTableBody) return;
     stockTableBody.innerHTML = "";
 
-    const searchTerm = stockSearchInput.value.toLowerCase();
-    const filterType = stockFilterSelect.value;
+    // Proteção de leitura de filtros vazios
+    const searchTerm = stockSearchInput ? stockSearchInput.value.toLowerCase() : "";
+    const filterType = stockFilterSelect ? stockFilterSelect.value : "all";
 
     const filteredItems = stockItems.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm);
-        if (filterType === 'critical') return matchesSearch && (item.qty <= item.minQty);
-        if (filterType === 'zero') return matchesSearch && (item.qty === 0);
+        const q = parseInt(item.qty) || 0;
+        const m = parseInt(item.minQty) || 0;
+
+        if (filterType === 'critical') return matchesSearch && (q <= m);
+        if (filterType === 'zero') return matchesSearch && (q === 0);
         return matchesSearch;
     });
 
@@ -464,20 +484,22 @@ function renderStockTable() {
     }
 
     filteredItems.forEach((item) => {
-        // Encontra o index real no array global original
-        const originalIndex = stockItems.findIndex(i => i.name === item.name);
+        const originalIndex = stockItems.findIndex(i => i.name.toLowerCase() === item.name.toLowerCase());
         
         const tr = document.createElement('tr');
-        const isCritical = item.qty <= item.minQty;
-        if (isCritical) tr.classList.add('stock-row-critical');
+        const q = parseInt(item.qty) || 0;
+        const m = parseInt(item.minQty) || 0;
+        const c = parseFloat(item.cost) || 0;
+        
+        if (q <= m) tr.classList.add('stock-row-critical');
 
-        const totalCost = item.qty * item.cost;
+        const totalCost = q * c;
 
         tr.innerHTML = `
             <td style="padding: 10px;"><strong>${item.name.toUpperCase()}</strong></td>
-            <td style="padding: 10px; text-align: center;">${item.qty} Un.</td>
-            <td style="padding: 10px; text-align: center; color:#94a3b8;">${item.minQty} Un.</td>
-            <td style="padding: 10px;">R$ ${item.cost.toFixed(2)}</td>
+            <td style="padding: 10px; text-align: center;">${q} Un.</td>
+            <td style="padding: 10px; text-align: center; color:#94a3b8;">${m} Un.</td>
+            <td style="padding: 10px;">R$ ${c.toFixed(2)}</td>
             <td style="padding: 10px; font-weight:bold;">R$ ${totalCost.toFixed(2)}</td>
             <td style="padding: 10px; text-align: right;">
                 <button class="btn-stock-action" onclick="changeStockQty(${originalIndex}, 1)" title="Entrada"><i class="fas fa-plus"></i></button>
@@ -492,12 +514,13 @@ function renderStockTable() {
 if (btnSaveProduct) {
     btnSaveProduct.addEventListener('click', () => {
         const name = prodNameInput.value.trim();
-        const qty = parseInt(prodQtyInput.value) || 0;
-        const minQty = parseInt(prodMinInput.value) || 0;
-        const cost = parseFloat(prodCostInput.value) || 0;
+        const qty = parseInt(prodQtyInput.value);
+        const minQty = parseInt(prodMinInput.value);
+        const cost = parseFloat(prodCostInput.value);
 
-        if (!name || qty < 0 || minQty < 0 || cost < 0) {
-            alert('Por favor, preencha as informações do produto corretamente.');
+        // Validação estrita para impedir a entrada de strings incorretas e NaN
+        if (!name || isNaN(qty) || qty < 0 || isNaN(minQty) || minQty < 0 || isNaN(cost) || cost < 0) {
+            alert('Por favor, preencha todas as informações com valores numéricos válidos e maiores ou iguais a zero.');
             return;
         }
 
@@ -509,24 +532,32 @@ if (btnSaveProduct) {
         stockItems.push({ name, qty, minQty, cost });
         addLog("cadastro", `Cadastrou o produto "${name.toUpperCase()}" com estoque inicial de ${qty} unidades.`);
         
+        // Limpa as caixas de texto
         prodNameInput.value = ''; prodQtyInput.value = ''; prodMinInput.value = ''; prodCostInput.value = '';
+        
+        // Salva e atualiza
         saveAlmoxarifadoData();
     });
 }
 
 window.changeStockQty = function(index, amount) {
     const targetItem = stockItems[index];
-    if (amount < 0 && targetItem.qty + amount < 0) {
+    if (!targetItem) return;
+
+    let currentQty = parseInt(targetItem.qty) || 0;
+    if (amount < 0 && currentQty + amount < 0) {
         alert('ERRO OPERACIONAL: Saldo em estoque insuficiente.');
         return;
     }
-    targetItem.qty += amount;
+    
+    targetItem.qty = currentQty + amount;
     const tipoAcao = amount > 0 ? "Entrada" : "Saída/Baixa";
     addLog("movimentacao", `${tipoAcao} de 1 unidade efetuada para o item: "${targetItem.name.toUpperCase()}". Novo saldo: ${targetItem.qty}.`);
     saveAlmoxarifadoData();
 };
 
 window.deleteStockItem = function(index) {
+    if (!stockItems[index]) return;
     if (confirm(`Remover "${stockItems[index].name.toUpperCase()}" permanentemente?`)) {
         addLog("remocao", `Removeu o item "${stockItems[index].name.toUpperCase()}" do almoxarifado.`);
         stockItems.splice(index, 1);
@@ -534,7 +565,7 @@ window.deleteStockItem = function(index) {
     }
 };
 
-// Eventos dos Filtros Dinâmicos
+// Listeners dos Filtros Dinâmicos vinculados corretamente
 if (stockSearchInput) stockSearchInput.addEventListener('input', renderStockTable);
 if (stockFilterSelect) stockFilterSelect.addEventListener('change', renderStockTable);
 
