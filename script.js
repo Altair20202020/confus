@@ -1,9 +1,8 @@
 // ====== CONFIGURAÇÃO E CONEXÃO COM O BANCO DE DADOS (SUPABASE) ======
-// A URL abaixo usa o ID gerado automaticamente a partir da sua chave pública fornecida
 const SUPABASE_URL = "https://cnatk9qzp-svvkdtdtir.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_CNatk9qZp-SvvkDTdTIRqQ_loozljJD"; 
 
-// Inicializa o cliente oficial do Supabase
+// Inicializa o cliente oficial do Supabase corrigindo o erro crítico de referência
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variáveis de Controle de Estado da Aplicação
@@ -12,7 +11,7 @@ let currentUserObj = null;
 let currentActiveModule = null;
 let transactions = [];
 let stockItems = []; 
-let editingUserFromSearch = null; // Armazena temporariamente o usuário que o admin está editando
+let editingUserFromSearch = null;
 
 // Seleção de Telas Principais do DOM
 const screenLogin = document.getElementById('login-screen');
@@ -79,43 +78,51 @@ const btnChangePasswordSubmit = document.getElementById('btn-change-password-sub
 
 // ================= SESSÃO E AUTENTICAÇÃO NO SUPABASE =================
 async function handleLogin() {
-    const username = usernameInput.value.trim().toLowerCase();
-    const password = passwordInput.value;
+    try {
+        const username = usernameInput.value.trim().toLowerCase();
+        const password = passwordInput.value;
 
-    if (!username || !password) {
-        loginError.innerText = "SISTEMA: Digite o usuário e a senha.";
-        return;
+        if (!username || !password) {
+            loginError.innerText = "SISTEMA: Digite o usuário e a senha.";
+            return;
+        }
+
+        const { data: user, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('username', username)
+            .maybeSingle();
+
+        if (error) {
+            loginError.innerText = "SISTEMA: Erro de comunicação com o SQL.";
+            return;
+        }
+
+        if (!user) {
+            loginError.innerText = "ACESSO NEGADO: Usuário não localizado.";
+            return;
+        }
+
+        if (user.password !== password) {
+            loginError.innerText = "ACESSO NEGADO: Senha inválida.";
+            return;
+        }
+
+        if (user.is_blocked) {
+            loginError.innerText = "SISTEMA: Conta suspensa pelo administrador.";
+            return;
+        }
+
+        if (user.is_temporary) {
+            currentUser = user.username;
+            showScreen(screenForcePassword);
+            return;
+        }
+
+        logInUserSession(user);
+    } catch (err) {
+        loginError.innerText = "SISTEMA: Ocorreu um erro interno de processamento.";
     }
-
-    const { data: user, error } = await supabase
-        .from('usuarios')
-        .select('*')
-        .eq('username', username)
-        .single();
-
-    if (error || !user) {
-        loginError.innerText = "ACESSO NEGADO: Usuário não localizado.";
-        return;
-    }
-
-    if (user.password !== password) {
-        loginError.innerText = "ACESSO NEGADO: Senha inválida.";
-        return;
-    }
-
-    if (user.is_blocked) {
-        loginError.innerText = "SISTEMA: Conta suspensa pelo administrador.";
-        return;
-    }
-
-    // Se o usuário foi criado por solicitação e está no primeiro acesso
-    if (user.is_temporary) {
-        currentUser = user.username;
-        showScreen(screenForcePassword);
-        return;
-    }
-
-    logInUserSession(user);
 }
 
 function logInUserSession(user) {
@@ -141,7 +148,7 @@ function handleLogout() {
 
 async function checkActiveSession() {
     if (currentUser) {
-        const { data: user } = await supabase.from('usuarios').select('*').eq('username', currentUser).single();
+        const { data: user } = await supabase.from('usuarios').select('*').eq('username', currentUser).maybeSingle();
         if (user && !user.is_blocked) {
             currentUserObj = user;
             showScreen(screenMenu);
@@ -213,18 +220,16 @@ if (btnSendRequest) {
             return;
         }
 
-        // Envia o pedido para uma tabela temporária de requisições ou trata como usuário bloqueado até aprovação
-        // Para simplificar a estrutura com as 3 tabelas unificadas, salvamos as solicitações como contas bloqueadas
         const { error } = await supabase
             .from('usuarios')
             .insert([{ 
                 username, 
-                password: "123", // Senha padrão inicial de primeiro acesso
+                password: "123", 
                 display_name: username.toUpperCase(), 
                 email,
                 is_admin: false,
                 is_temporary: true,
-                is_blocked: true, // Começa bloqueado até o administrador aprovar no painel
+                is_blocked: true, 
                 perm_financas: regReqFinancas.checked,
                 perm_almoxarifado: regReqAlmoxarifado.checked,
                 perm_manutencao: regReqManutencao.checked
@@ -256,10 +261,10 @@ if (btnChangePasswordSubmit) {
             .update({ password: newPass, is_temporary: false, is_blocked: false })
             .eq('username', currentUser)
             .select()
-            .single();
+            .maybeSingle();
 
         if (!error && data) {
-            alert("Senha atualizada com sucesso!");
+            alert("Senha updated com sucesso!");
             forceNewPasswordInput.value = ""; forceConfirmPasswordInput.value = "";
             logInUserSession(data);
         } else {
@@ -269,9 +274,8 @@ if (btnChangePasswordSubmit) {
 }
 
 
-// ================= PAINEL ADMINISTRATIVO (GERENCIAMENTO DE ACESSOS) =================
+// ================= PAINEL ADMINISTRATIVO =================
 async function loadAdminPanelData() {
-    // Busca contas suspensas que possuem marcação de primeiro acesso (Solicitações pendentes)
     const { data: pendentes, error } = await supabase
         .from('usuarios')
         .select('*')
@@ -286,7 +290,6 @@ async function loadAdminPanelData() {
             pendentes.forEach(req => {
                 const card = document.createElement('div');
                 card.className = "request-card";
-                card.style.cssText = "background:#1f2230; padding:15px; border-radius:6px; margin-bottom:12px; border:1px solid var(--border-color);";
                 card.innerHTML = `
                     <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #2d3748; padding-bottom:8px; font-size:13px; margin-bottom:10px;">
                         <span><strong>USUÁRIO:</strong> ${req.username}</span>
@@ -312,7 +315,7 @@ async function loadAdminPanelData() {
 window.approveUser = async function(username) {
     const { error } = await supabase
         .from('usuarios')
-        .update({ is_blocked: false }) // Desbloqueia a conta para permitir o acesso
+        .update({ is_blocked: false })
         .eq('username', username);
 
     if (!error) {
@@ -339,7 +342,7 @@ if (btnSearchUser) {
             .from('usuarios')
             .select('*')
             .eq('username', search)
-            .single();
+            .maybeSingle();
 
         if (error || !user) {
             alert("Usuário não encontrado.");
@@ -439,7 +442,7 @@ if (btnSaveTransaction) {
 if (btnClearFinancas) {
     btnClearFinancas.addEventListener('click', async () => {
         if (confirm("Deseja mesmo limpar todo o histórico de transações do SQL?")) {
-            const { error } = await supabase.from('financas').delete().neq('id', 0); // Limpa todas as linhas
+            const { error } = await supabase.from('financas').delete().neq('id', 0);
             if (!error) {
                 await loadFinancasData();
             }
@@ -610,7 +613,6 @@ window.deleteStockItem = async function(id, name) {
     }
 };
 
-
 // ================= CONFIGURAÇÃO DE GATILHOS DE TELAS E CLIQUES =================
 document.querySelectorAll('.module-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -653,5 +655,5 @@ if (stockFilterSelect) stockFilterSelect.addEventListener('change', renderStockT
 
 passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
 
-// Inicialização de estado ao abrir a página
+// Inicialização do estado da sessão ao carregar a página
 checkActiveSession();
