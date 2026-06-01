@@ -325,7 +325,7 @@ function renderAdminRequests() {
     });
 }
 
-// CORRIGIDO: O e-mail agora é disparado unicamente aqui, quando o Admin clica em Aprovar
+// O e-mail é disparado unicamente aqui, quando o Admin clica em Aprovar
 function approveUser(index) {
     const req = requestsDB[index];
     const btnApprove = document.querySelectorAll('.btn-approve')[index];
@@ -376,19 +376,42 @@ function approveUser(index) {
     });
 }
 
+// CORRIGIDO: Agora efetua o disparo real do e-mail de rejeição via EmailJS
 function denyUser(index) {
     const req = requestsDB[index];
-    const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
+    const btnDeny = document.querySelectorAll('.btn-deny')[index];
     
-    if (motive === null) return;
+    const motive = prompt(`Informe o motivo técnico da rejeição para o operador ${req.username.toUpperCase()}:`);
+    if (motive === null) return; // Se o admin cancelar o prompt, interrompe a ação
+    
     const finalMotive = motive.trim() || "Nenhum motivo específico foi detalhado pela equipe de segurança.";
 
-    requestsDB.splice(index, 1);
-    localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+    // Feedback visual de carregamento no botão do Admin
+    if (btnDeny) {
+        btnDeny.disabled = true;
+        btnDeny.innerHTML = "Processando recusa...";
+    }
 
-    alert(`[SIMULAÇÃO DE SISTEMA DE E-MAIL]\n\nPara: ${req.email}\nAssunto: Solicitação de Acesso Negada\n\nOlá ${req.username.toUpperCase()},\nSua solicitação de acesso ao Enterprise OS foi REJEITADA.\n\nMotivo da Administração:\n"${finalMotive}"`);
-
-    renderAdminRequests();
+    // ================= DISPARO REAL DE REJEIÇÃO COM EMAILJS =================
+    emailjs.send("default_service", "template_v5wk5hw", {
+        to_email: req.email,              
+        username: req.username.toUpperCase(), 
+        motivo: finalMotive   
+    })
+    .then(() => {
+        // Remove da lista pendente local apenas se o e-mail for enviado com sucesso
+        requestsDB.splice(index, 1);
+        localStorage.setItem('sys_requests_db', JSON.stringify(requestsDB));
+        
+        alert(`SISTEMA: Notificação de recusa enviada com sucesso para: ${req.email}`);
+    })
+    .catch((error) => {
+        alert("SISTEMA: Erro crítico ao enviar e-mail de recusa. Verifique as chaves e o console.");
+        console.error("Erro EmailJS:", error);
+    })
+    .finally(() => {
+        renderAdminRequests();
+    });
 }
 
 
@@ -472,7 +495,7 @@ btnSearchUser.addEventListener('click', () => {
         userBeingEdited = query;
         editingUserTitle.innerText = `EDITANDO_DIRETIVAS: ${query.toUpperCase()}`;
         
-        chkFinancas.checked = usersDB[query].permissions.financas;
+        chkFinancas.checked = usersDB[query].permissions.financianca || usersDB[query].permissions.financas;
         chkAlmoxarifado.checked = usersDB[query].permissions.almoxarifado;
         chkManutencao.checked = usersDB[query].permissions.manutencao;
         
@@ -518,7 +541,6 @@ function loadFinancasData() {
     renderList();
 }
 
-// ... (Restante das funções originais mantidas de forma idêntica)
 function formatCurrency(value) { return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
 
 function updateBalances() {
