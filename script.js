@@ -1,3 +1,12 @@
+// =========================================================================
+// 0. DIAGNOSTICADOR AUTOMÁTICO (Substitui o F12 em PCs bloqueados)
+// =========================================================================
+window.onerror = function(msg, url, line) {
+    alert("🚨 ERRO INTERNO DETECTADO:\n\n" + msg + "\n\nLinha: " + line + "\nArquivo: " + url.split('/').pop());
+    return false;
+
+};
+
 // ====== CONFIGURAÇÃO E CONEXÃO COM O BANCO DE DADOS (SUPABASE) ======
 const SUPABASE_URL = "https://cnatk9qzp-svvkdtdtir.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_CNatk9qZp-SvvkDTdTIRqQ_loozljJD"; 
