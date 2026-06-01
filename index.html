@@ -300,10 +300,14 @@
 
     </div>
 
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+   </div> <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
     <script type="text/javascript">
        (function(){
-          emailjs.init("4OW4x54PPSIewfjV-"); // Sua Public Key aplicada com sucesso
+          // CORRIGIDO: Inicialização estruturada com publicKey recomendada pela documentação oficial
+          emailjs.init({
+             publicKey: "4OW4x54PPSIewfjV-",
+          });
        })();
     </script>
 
