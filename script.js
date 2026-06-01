@@ -4,7 +4,7 @@ const SUPABASE_URL = "https://cnatk9qzp-svvkdtdtir.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_CNatk9qZp-SvvkDTdTIRqQ_loozljJD"; 
 
 // Inicializa o cliente oficial do Supabase
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variáveis de Controle de Estado da Aplicação
 let currentUser = sessionStorage.getItem('logged_user') || null;
