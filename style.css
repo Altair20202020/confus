@@ -29,6 +29,7 @@ body {
     display: flex;
     justify-content: center;
     padding: 20px;
+    padding-top: 20px;
 }
 
 .container, .menu-container {
@@ -52,6 +53,189 @@ body {
 .header-left { display: flex; align-items: center; gap: 15px; }
 .system-logo { font-size: 24px; color: var(--color-primary); }
 h1 { font-size: 18px; letter-spacing: 1px; }
+
+/* ================= NEW LAYOUT - TELA LOGIN SPLIT MODERN ================= */
+#login-screen.login-split-container {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    background-color: #0d0e12;
+}
+
+/* Lado Esquerdo - Branding/Imagem de Fundo */
+.login-branding-side {
+    flex: 1.2;
+    position: relative;
+    background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1000&auto=format&fit=crop') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    padding: 60px;
+}
+
+.branding-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(10, 11, 16, 0.95) 0%, rgba(108, 92, 231, 0.3) 100%);
+    z-index: 1;
+}
+
+.branding-content {
+    position: relative;
+    z-index: 2;
+    max-width: 550px;
+}
+
+.brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    color: #fff;
+    margin-bottom: 30px;
+}
+
+.branding-content h2 {
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #ffffff;
+    margin-bottom: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.branding-content p {
+    font-size: 15px;
+    color: #a0aec0;
+    line-height: 1.7;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Lado Direito - Formulário Clean */
+.login-form-side {
+    flex: 1;
+    background-color: #0a0b10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    border-left: 1px solid #1f2230;
+}
+
+.login-form-wrapper {
+    width: 100%;
+    max-width: 360px;
+}
+
+.login-form-header {
+    margin-bottom: 40px;
+}
+
+.login-form-header h2 {
+    font-size: 28px;
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.login-form-header p {
+    font-size: 13px;
+    color: #718096;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Inputs Modernos com Label Flutuante */
+.modern-input-group {
+    position: relative;
+    margin-bottom: 35px;
+    width: 100%;
+}
+
+.modern-input-group input {
+    width: 100%;
+    padding: 10px 0;
+    background: transparent !important;
+    border: none;
+    border-bottom: 2px solid #2d3748;
+    color: #ffffff !important;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+/* Texto que flutua */
+.modern-input-group label {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: #718096;
+    font-size: 15px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    font-family: system-ui, -apple-system, sans-serif;
+    margin: 0;
+}
+
+/* Animação do input ativo/preenchido */
+.modern-input-group input:focus ~ label,
+.modern-input-group input:not(:placeholder-shown) ~ label {
+    top: -14px;
+    font-size: 12px;
+    color: #6c5ce7;
+}
+
+.modern-input-group .input-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #6c5ce7;
+    transition: width 0.3s ease;
+}
+
+.modern-input-group input:focus ~ .input-line {
+    width: 100%;
+}
+
+.modern-input-group input:focus {
+    border-bottom-color: transparent;
+}
+
+/* Botão Moderno Minimalista */
+.btn-sys-modern {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--color-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2);
+}
+
+.btn-sys-modern:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+}
 
 /* --- MODULES GRID --- */
 .modules-grid {
@@ -158,7 +342,7 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 /* --- ESTILOS DE SUPORTE --- */
 .sys-box { background-color: var(--bg-box); border: 1px solid var(--border-color); border-radius: 8px; }
 .hidden { display: none !important; }
-.error-msg { color: var(--color-danger); font-size: 12px; font-weight: bold; margin-top: 5px; }
+.error-msg { color: var(--color-danger); font-size: 12px; font-weight: bold; margin-top: 8px; text-align: center; }
 
 .btn-back {
     background: transparent;
@@ -201,6 +385,22 @@ h1 { font-size: 18px; letter-spacing: 1px; }
 [class^="btn-sys-"] { padding: 12px 20px; border: none; border-radius: 4px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-sys-primary { background-color: var(--color-primary); color: white; }
 .btn-sys-danger { background-color: transparent; color: var(--color-danger); border: 1px solid var(--color-danger); padding: 8px 15px; font-size: 11px; }
+
+/* ================= RESPONSIVIDADE E ADAPTAÇÕES ================= */
+@media (max-width: 968px) {
+    .login-branding-side {
+        display: none !important; /* Remove o painel da esquerda em telas mobile */
+    }
+    #login-screen.login-split-container {
+        position: relative;
+        background-color: #0a0b10;
+    }
+    .login-form-side {
+        width: 100%;
+        border-left: none;
+        padding: 30px 20px;
+    }
+}
 
 @media (max-width: 768px) {
     .system-header { flex-direction: column; gap: 10px; }
