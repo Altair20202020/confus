@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class=\"dark-theme\">
+<body class="dark-theme">
     <div class="main-wrapper">
         
         <div class="login-split-container" id="login-screen">
@@ -28,264 +28,362 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="login-username">Identificador do Usuário</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="login-username" placeholder="ex: altair" autocomplete="off">
+                        <div class="modern-input-group">
+                            <input type="text" id="login-username" required placeholder=" ">
+                            <label for="login-username">Usuário</label>
+                            <span class="input-line"></span>
                         </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="login-password">Senha de Acesso</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="login-password" placeholder="••••••••">
+                        
+                        <div class="modern-input-group">
+                            <input type="password" id="login-password" required placeholder=" ">
+                            <label for="login-password">Senha de Acesso</label>
+                            <span class="input-line"></span>
                         </div>
-                    </div>
+                        
+                        <button id="btn-login" class="btn-sys-modern">
+                            <span>Acessar Plataforma</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                        
+                        <p id="login-error" class="error-msg"></p>
 
-                    <div id="login-error" style="color: var(--color-danger); margin-bottom: 15px; font-size: 13px; font-weight: bold; min-height: 18px; text-align: center;"></div>
-
-                    <button class="btn-primary" id="btn-login" style="width: 100%;">
-                        <span>Autenticar no Sistema</span>
-                        <i class="fas fa-sign-in-alt"></i>
-                    </button>
-
-                    <div class="login-footer-links">
-                        <span style="color: var(--text-secondary);">Novo por aqui?</span>
-                        <a id="link-go-register" style="cursor: pointer;">Solicitar uma conta corporativa</a>
+                        <div class="login-extra-links">
+                            <span>Não tem uma conta? <a href="#" id="link-go-register">Solicitar Acesso</a></span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="login-split-container hidden" id="register-screen">
-            <div class="login-form-side" style="width: 100%; max-width: 500px; margin: auto; padding: 40px;">
+            <div class="login-form-side" style="border-left: none; border-right: 1px solid #1f2230;">
                 <div class="login-form-wrapper">
                     <div class="login-form-header">
                         <h2>Solicitar Acesso</h2>
-                        <p>Preencha os dados abaixo. O administrador analisará o seu pedido.</p>
+                        <p>Preencha os dados abaixo. Sua solicitação será avaliada pela administração.</p>
                     </div>
+
                     <div class="form-group">
-                        <label>Nome de Usuário (Identificador)</label>
-                        <input type="text" id="reg-username" placeholder="ex: meli">
-                    </div>
-                    <div class="form-group">
-                        <label>E-mail Corporativo</label>
-                        <input type="email" id="reg-email" placeholder="nome@empresa.com">
-                    </div>
-                    <div class="form-group">
-                        <label style="margin-bottom: 10px; display:block;">Módulos Necessários:</label>
-                        <div style="display:flex; flex-direction:column; gap:10px; background: var(--bg-main); padding: 15px; border-radius: 6px;">
-                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="reg-req-financas"> Sistema Financeiro</label>
-                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="reg-req-almoxarifado"> Almoxarifado / Estoque</label>
-                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="reg-req-manutencao"> Ordem de Manutenção</label>
+                        <div class="modern-input-group">
+                            <input type="text" id="reg-username" required placeholder=" ">
+                            <label for="reg-username">Nome de Usuário (Login)</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <div class="modern-input-group">
+                            <input type="email" id="reg-email" required placeholder=" ">
+                            <label for="reg-email">E-mail Corporativo</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <div class="modules-requested-box">
+                            <label class="box-title"><i class="fas fa-layer-group"></i> Módulos Pretendidos:</label>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-financas">
+                                <label for="reg-req-financas">Módulo de Finanças</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-almoxarifado">
+                                <label for="reg-req-almoxarifado">Módulo de Almoxarifado</label>
+                            </div>
+                            <div class="checkbox-option">
+                                <input type="checkbox" id="reg-req-manutencao">
+                                <label for="reg-req-manutencao">Módulo de Manutenção</label>
+                            </div>
+                        </div>
+                        
+                        <button id="btn-send-request" class="btn-sys-modern">
+                            <span>Enviar Solicitação</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        
+                        <div class="login-extra-links">
+                            <span>Já tem cadastro? <a href="#" id="link-back-login">Voltar ao Login</a></span>
                         </div>
                     </div>
-                    <button class="btn-primary" id="btn-send-request" style="width:100%; margin-top:10px;">Enviar Solicitação</button>
-                    <div class="login-footer-links" style="text-align:center; margin-top:20px;">
-                        <a id="link-back-login" style="cursor:pointer;"><i class="fas fa-arrow-left"></i> Voltar para o Login</a>
-                    </div>
+                </div>
+            </div>
+            <div class="login-branding-side">
+                <div class="branding-overlay" style="background: linear-gradient(135deg, rgba(10, 11, 16, 0.95) 0%, rgba(0, 255, 136, 0.15) 100%);"></div>
+                <div class="branding-content">
+                    <div class="brand-badge"><i class="fas fa-shield-alt"></i> SECURITY_GATEWAY</div>
+                    <h2>Controle rígido de acessos e diretivas de segurança.</h2>
+                    <p>Novas contas passam por triagem e auditoria antes da liberação de chaves criptográficas de cripto-transações.</p>
                 </div>
             </div>
         </div>
 
         <div class="login-split-container hidden" id="force-password-screen">
-            <div class="login-form-side" style="width: 100%; max-width: 450px; margin: auto; padding: 40px;">
+            <div class="login-form-side" style="flex: 1; max-width: 500px; margin: 0 auto;">
                 <div class="login-form-wrapper">
                     <div class="login-form-header">
-                        <h2>🔑 Nova Senha Obrigatória</h2>
-                        <p>Esta é uma conta temporária criada pelo administrador. Defina sua senha definitiva.</p>
+                        <h2><i class="fas fa-key" style="color: var(--color-primary)"></i> Primeiro Acesso</h2>
+                        <p>Por segurança, você deve alterar a sua senha temporária para prosseguir.</p>
                     </div>
+
                     <div class="form-group">
-                        <label>Nova Senha</label>
-                        <input type="password" id="force-new-password" placeholder="Mínimo 4 caracteres">
+                        <div class="modern-input-group">
+                            <input type="password" id="force-new-password" required placeholder=" ">
+                            <label for="force-new-password">Nova Senha Definitiva</label>
+                            <span class="input-line"></span>
+                        </div>
+                        <div class="modern-input-group">
+                            <input type="password" id="force-confirm-password" required placeholder=" ">
+                            <label for="force-confirm-password">Confirme a Nova Senha</label>
+                            <span class="input-line"></span>
+                        </div>
+
+                        <button id="btn-change-password-submit" class="btn-sys-modern">
+                            <span>Salvar Nova Senha e Entrar</span>
+                            <i class="fas fa-check-circle"></i>
+                        </button>
                     </div>
-                    <div class="form-group">
-                        <label>Confirme a Nova Senha</label>
-                        <input type="password" id="force-confirm-password" placeholder="Repita a nova senha">
-                    </div>
-                    <button class="btn-primary" id="btn-change-password-submit" style="width:100%; margin-top:10px;">Atualizar e Entrar</button>
                 </div>
             </div>
         </div>
 
         <div class="menu-container hidden" id="menu-screen">
-            <header class="sys-header">
-                <div class="header-brand">
-                    <i class="fas fa-cubes"></i>
-                    <span>ENTERPRISE_OS // WORKSPACE</span>
+            <header class="system-header">
+                <div class="header-left">
+                    <i class="fas fa-cubes system-logo"></i>
+                    <h1>MAIN_MENU // ENTERPRISE_OS</h1>
                 </div>
-                <div class="header-profile">
-                    <span class="user-placeholder-name">USUÁRIO</span>
-                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i></button>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user-shield"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
                 </div>
             </header>
 
-            <div class="menu-grid">
-                <div class="module-card" data-module="financas">
-                    <div class="module-icon"><i class="fas fa-wallet" style="color: #4cd137;"></i></div>
-                    <h3>Controladoria & Finanças</h3>
-                    <p>Controle de receitas, despesas corporativas e fluxo de caixa contínuo.</p>
-                    <span class="badge-permission">AVALIANDO...</span>
+            <div class="modules-grid">
+                <div class="module-card" id="mod-financas" data-module="financas">
+                    <i class="fas fa-wallet mod-icon"></i>
+                    <h3>FINANÇAS</h3>
+                    <p>Controle de fluxo de caixa, despesas e relatórios.</p>
+                    <span class="badge-permission">Acesso Restrito</span>
                 </div>
-
-                <div class="module-card" data-module="almoxarifado">
-                    <div class="module-icon"><i class="fas fa-boxes" style="color: #00a8ff;"></i></div>
-                    <h3>Almoxarifado & Materiais</h3>
-                    <p>Inventário de insumos ativos, alertas de nível crítico e registros de saídas.</p>
-                    <span class="badge-permission">AVALIANDO...</span>
+                
+                <div class="module-card" id="mod-almoxarifado" data-module="almoxarifado">
+                    <i class="fas fa-boxes-stacked mod-icon"></i>
+                    <h3>ALMOXARIFADO</h3>
+                    <p>Controle de inventário, valoração de estoque e alertas de reposição.</p>
+                    <span class="badge-permission">Acesso Restrito</span>
                 </div>
-
-                <div class="module-card disabled" data-module="manutencao">
-                    <div class="module-icon"><i class="fas fa-tools" style="color: #e1b12c;"></i></div>
-                    <h3>Engenharia de Manutenção</h3>
-                    <p>Módulo em desenvolvimento estrutural de arquitetura.</p>
-                    <span class="badge-permission" style="color:#7f8c8d; border-color:#7f8c8d;">EM_BREVE</span>
+                
+                <div class="module-card" id="mod-manutencao" data-module="manutencao">
+                    <i class="fas fa-tools mod-icon"></i>
+                    <h3>MANUTENÇÃO</h3>
+                    <p>Módulo em desenvolvimento (Bloqueado).</p>
+                    <span class="badge-permission">Indisponível</span>
                 </div>
-
-                <div class="module-card admin-only hidden" id="mod-admin" data-module="admin" style="border-color: #6c5ce7; background: linear-gradient(145deg, #14161f 0%, #1e1b35 100%);">
-                    <div class="module-icon"><i class="fas fa-user-shield" style="color: #6c5ce7;"></i></div>
-                    <h3>Painel do Administrador</h3>
-                    <p>Gestão centralizada de credenciais, aprovação de novas contas e permissões de módulos SQL.</p>
-                    <span class="badge-permission" style="color:#6c5ce7; border-color:#6c5ce7;">ROOT_ACCESS</span>
+                <div class="module-card admin-only hidden" id="mod-admin" data-module="admin">
+                    <i class="fas fa-sliders-h mod-icon"></i>
+                    <h3>PAINEL ADMIN</h3>
+                    <p>Gerenciamento de usuários e permissões do sistema.</p>
+                    <span class="badge-permission badge-admin">Master</span>
                 </div>
             </div>
         </div>
 
-        <div class="container hidden" id="system-dashboard">
-            <header class="sys-header">
-                <button class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
-                <h2>Módulo Financeiro</h2>
-                <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i></button>
-            </header>
-            <main class="sys-content">
-                <div class="dashboard-grid">
-                    <div class="balance-card">
-                        <div class="card-header"><span>Balanço Consolidado</span><i class="fas fa-dollar-sign"></i></div>
-                        <div class="balance-value" id="total-balance">R$ 0.00</div>
-                    </div>
-                    <div class="mini-cards-wrapper">
-                        <div class="card">
-                            <div class="card-info"><h3>Total de Receitas</h3><p id="total-entries" style="color:var(--color-success)">R$ 0.00</p></div>
-                            <i class="fas fa-arrow-up" style="color:var(--color-success)"></i>
-                        </div>
-                        <div class="card">
-                            <div class="card-info"><h3>Total de Despesas</h3><p id="total-expenses" style="color:var(--color-danger)">R$ 0.00</p></div>
-                            <i class="fas fa-arrow-down" style="color:var(--color-danger)"></i>
-                        </div>
-                    </div>
+        <div class="container hidden" id="admin-panel">
+            <header class="system-header">
+                <div class="header-left">
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>ADMIN_CONTROL_CENTER</h1>
                 </div>
-                <div class="workspace-grid" style="display:grid; grid-template-columns: 1fr 2fr; gap:20px; margin-top:20px;">
-                    <div class="sys-box">
-                        <h3>Lançamento de Registro</h3>
-                        <div class="form-group" style="margin-top:15px;"><label>Descrição</label><input type="text" id="trans-title" placeholder="Ex: Compra de Cabos"></div>
-                        <div class="form-group"><label>Valor (R$)</label><input type="number" step="0.01" id="trans-value" placeholder="0.00"></div>
-                        <div class="form-group">
-                            <label>Natureza do Fluxo</label>
-                            <select id="trans-type">
-                                <option value="entrada">Entrada / Receita</option>
-                                <option value="saida">Saída / Despesa</option>
-                            </select>
-                        </div>
-                        <button class="btn-primary" id="btn-save" style="width:100%; margin-top:10px;">Salvar no Livro-Caixa</button>
-                        <button class="btn-secondary" id="btn-clear" style="width:100%; margin-top:10px; background:#2c1a1a; color:#ff4757; border-color:#451a1a;">Limpar Todo o Histórico</button>
+                <div class="header-right">
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
+            </header>
+
+            <main class="admin-content sys-box" style="margin-bottom: 20px;">
+                <div class="box-header" style="background-color: #1a1d29;">
+                    <h2><i class="fas fa-bell"></i> SOLICITAÇÕES DE CADASTRO PENDENTES</h2>
+                </div>
+                <div class="admin-requests-container" id="admin-requests-container"></div>
+            </main>
+
+            <main class="admin-content sys-box">
+                <div class="box-header">
+                    <h2><i class="fas fa-users-cog"></i> GERENCIAR PERMISSÕES EXISTENTES</h2>
+                </div>
+                <div class="admin-workspace">
+                    <div class="search-box-wrapper">
+                        <input type="text" id="admin-search-user" placeholder="Pesquise o nome do usuário (Ex: altair, meli)">
+                        <button id="btn-search-user" class="btn-sys-primary"><i class="fas fa-search"></i> BUSCAR</button>
                     </div>
-                    <div class="sys-box">
-                        <h3>Histórico de Transações Recentes</h3>
-                        <div id="list-container" style="margin-top:15px; max-height:300px; overflow-y:auto;"></div>
+                    <div id="admin-user-permissions-card" class="permissions-editor hidden">
+                        <h3 id="editing-user-title">Editando: USUARIO</h3>
+                        <div class="permission-row">
+                            <label>Módulo Finanças</label>
+                            <input type="checkbox" id="perm-financas">
+                        </div>
+                        <div class="permission-row">
+                            <label>Módulo Almoxarifado</label>
+                            <input type="checkbox" id="perm-almoxarifado">
+                        </div>
+                        <div class="permission-row">
+                            <label>Módulo Manutenção</label>
+                            <input type="checkbox" id="perm-manutencao">
+                        </div>
+                        <button id="btn-save-permissions" class="btn-sys-primary" style="margin-top: 15px;">
+                            <i class="fas fa-save"></i> SALVAR PERMISSÕES
+                        </button>
                     </div>
                 </div>
             </main>
         </div>
 
-        <div class="container hidden" id="admin-panel">
-            <header class="sys-header">
-                <button class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
-                <h2>Painel do Administrador</h2>
-                <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i></button>
+        <div class="container hidden" id="system-dashboard">
+            <header class="system-header">
+                <div class="header-left">
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>MODULO_FINANÇAS</h1>
+                </div>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
             </header>
-            <main class="sys-content" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                <div class="sys-box">
-                    <h3>Aprovação de Contas Pendentes</h3>
-                    <div id="admin-requests-container" style="margin-top:15px;"></div>
+            <section class="dashboard-grid">
+                <div class="balance-card main-balance">
+                    <div class="card-header"><h3>SALDO_DISPONÍVEL</h3><i class="fas fa-sack-dollar"></i></div>
+                    <p class="balance-value" id="total-balance">R$ 0,00</p>
                 </div>
-                <div class="sys-box">
-                    <h3>Gerenciamento de Acessos</h3>
-                    <div style="display:flex; gap:10px; margin-top:15px; margin-bottom:15px;">
-                        <input type="text" id="admin-search-user" placeholder="Buscar usuário ex: meli" style="margin-bottom:0;">
-                        <button class="btn-primary" id="btn-search-user" style="padding:0 20px;"><i class="fas fa-search"></i></button>
+                <div class="mini-cards-wrapper">
+                    <div class="card entrada">
+                        <div class="card-info"><h3>ENTRADAS_TOTAIS</h3><p id="total-entries">R$ 0,00</p></div>
+                        <i class="fas fa-arrow-trend-up icon-entries"></i>
                     </div>
-                    <div id="admin-user-permissions-card" class="hidden" style="background:var(--bg-main); padding:15px; border-radius:6px; border:1px solid var(--border-color);">
-                        <h4 id="editing-user-title" style="margin-bottom:15px; font-size:13px; color:#6c5ce7;">Editando Permissões:</h4>
-                        <div style="display:flex; flex-direction:column; gap:12px;">
-                            <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="perm-financas"> Módulo Financeiro Autorizado</label>
-                            <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="perm-almoxarifado"> Módulo Almoxarifado Autorizado</label>
-                            <label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="perm-manutencao"> Módulo Manutenção Autorizado</label>
-                            <button class="btn-primary" id="btn-save-permissions" style="margin-top:5px; background:#6c5ce7;">Salvar Modificações no SQL</button>
-                        </div>
+                    <div class="card saida">
+                        <div class="card-info"><h3>DÍVIDAS_ATIVAS</h3><p id="total-expenses">R$ 0,00</p></div>
+                        <i class="fas fa-arrow-trend-down icon-expenses"></i>
                     </div>
                 </div>
-            </main>
+            </section>
+            
+            <div class="dashboard-workspace" style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px;">
+                <div class="sys-box" style="padding: 20px;">
+                    <h3>Lançar Transação</h3>
+                    <div class="form-group" style="margin-top:15px; display:flex; flex-direction:column; gap:12px;">
+                        <input type="text" id="trans-title" placeholder="Descrição (Ex: Venda de Produto)" style="padding:10px; background:#1f2230; border:1px solid #2d3748; color:#fff; border-radius:4px;">
+                        <input type="number" id="trans-value" placeholder="Valor (R$)" style="padding:10px; background:#1f2230; border:1px solid #2d3748; color:#fff; border-radius:4px;">
+                        <select id="trans-type" style="padding:10px; background:#1f2230; border:1px solid #2d3748; color:#fff; border-radius:4px;">
+                            <option value="entrada">Entrada (+)</option>
+                            <option value="saida">Saída (-)</option>
+                        </select>
+                        <button id="btn-save" class="btn-sys-modern" style="padding:10px; background:#6c5ce7;">Salvar Transação</button>
+                        <button id="btn-clear" style="padding:8px; background:transparent; color:#ff4757; border:1px solid #ff4757; border-radius:4px; cursor:pointer;">Limpar Histórico</button>
+                    </div>
+                </div>
+                <div class="sys-box" style="padding: 20px;">
+                    <h3>Histórico de Caixa</h3>
+                    <div id="list-container" style="max-height: 250px; overflow-y: auto; margin-top:15px;"></div>
+                </div>
+            </div>
         </div>
 
         <div class="container hidden" id="system-almoxarifado">
-            <header class="sys-header">
-                <button class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
-                <h2>Almoxarifado & Insumos</h2>
-                <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i></button>
-            </header>
-            <main class="sys-content">
-                <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:20px;">
-                    <div class="balance-card" style="padding:15px;"><div class="card-header">Materiais Catalogados</div><div class="balance-value" id="kpi-total-items" style="font-size:24px; margin-top:5px;">0</div></div>
-                    <div class="balance-card" style="padding:15px;"><div class="card-header">Valor em Estoque</div><div class="balance-value" id="kpi-total-valuation" style="font-size:24px; margin-top:5px; color:var(--color-success)">R$ 0.00</div></div>
-                    <div class="balance-card" style="padding:15px;"><div class="card-header">Itens com Saldo Crítico</div><div class="balance-value" id="kpi-critical-alerts" style="font-size:24px; margin-top:5px; color:var(--color-danger)">0</div></div>
+            <header class="system-header">
+                <div class="header-left">
+                    <button class="btn-back"><i class="fas fa-arrow-left"></i> VOLTAR</button>
+                    <h1>MODULO_ALMOXARIFADO // GESTÃO AVANÇADA</h1>
                 </div>
+                <div class="header-right">
+                    <span class="user-badge"><i class="fas fa-user"></i> <span class="user-placeholder-name">USER</span></span>
+                    <button class="btn-logout btn-trigger-logout"><i class="fas fa-power-off"></i> LOGOUT</button>
+                </div>
+            </header>
 
-                <div style="display:grid; grid-template-columns: 1fr 2fr; gap:20px;">
-                    <div style="display:flex; flex-direction:column; gap:15px;">
-                        <div class="sys-box">
-                            <h3>Cadastrar Novo Material</h3>
-                            <div class="form-group" style="margin-top:10px;"><label>Nome do Insumo</label><input type="text" id="stock-prod-name" placeholder="Ex: Roteador Cisco"></div>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                                <div class="form-group"><label>Qtd Inicial</label><input type="number" id="stock-prod-qty" placeholder="0"></div>
-                                <div class="form-group"><label>Estoque Mínimo</label><input type="number" id="stock-prod-min" placeholder="2"></div>
+            <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                <div class="sys-box" style="padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h4 style="font-size: 11px; color: var(--text-secondary);">PRODUTOS REGISTRADOS</h4>
+                        <p id="kpi-total-items" style="font-size: 24px; font-weight: bold; margin-top: 5px; color: #fff;">0</p>
+                    </div>
+                    <i class="fas fa-boxes-stacked" style="font-size: 24px; color: var(--color-primary);"></i>
+                </div>
+                <div class="sys-box" style="padding: 15px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h4 style="font-size: 11px; color: var(--text-secondary);">PATRIMÔNIO EM ESTOQUE</h4>
+                        <p id="kpi-total-valuation" style="font-size: 24px; font-weight: bold; margin-top: 5px; color: var(--color-success);">R$ 0,00</p>
+                    </div>
+                    <i class="fas fa-sack-dollar" style="font-size: 24px; color: var(--color-success);"></i>
+                </div>
+                <div class="sys-box" style="padding: 15px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid var(--color-danger);">
+                    <div>
+                        <h4 style="font-size: 11px; color: var(--text-secondary);">ALERTAS CRÍTICOS</h4>
+                        <p id="kpi-critical-alerts" style="font-size: 24px; font-weight: bold; margin-top: 5px; color: var(--color-danger);">0</p>
+                    </div>
+                    <i class="fas fa-triangle-exclamation" style="font-size: 24px; color: var(--color-danger);"></i>
+                </div>
+            </section>
+
+            <main class="dashboard-workspace" style="display: grid; grid-template-columns: 1fr 2.2fr; gap: 20px;">
+                
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div class="sys-box" style="padding: 20px;">
+                        <h3><i class="fas fa-circle-plus"></i> Novo Material</h3>
+                        <div class="form-group" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">NOME DO MATERIAL</label>
+                                <input type="text" id="stock-prod-name" placeholder="Ex: Chave Contatora 220V" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; border-radius:4px; margin-top:4px;">
                             </div>
-                            <div class="form-group"><label>Custo Unitário (R$)</label><input type="number" step="0.01" id="stock-prod-cost" placeholder="0.00"></div>
-                            <button class="btn-primary" id="btn-save-product" style="width:100%; background:#6c5ce7;"><i class="fas fa-plus"></i> Registrar no Banco</button>
-                        </div>
-                        <div class="sys-box" style="flex:1;">
-                            <h3>Movimentações Recentes (Logs)</h3>
-                            <div id="stock-audit-log" style="margin-top:10px; display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; font-size:11px;"></div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div>
+                                    <label style="font-size: 11px; color: var(--text-secondary);">QUANTIDADE</label>
+                                    <input type="number" id="stock-prod-qty" placeholder="0" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; border-radius:4px; margin-top:4px;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11px; color: var(--text-secondary);">ESTOQUE MÍNIMO</label>
+                                    <input type="number" id="stock-prod-min" placeholder="0" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; border-radius:4px; margin-top:4px;">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="font-size: 11px; color: var(--text-secondary);">CUSTO UNITÁRIO (R$)</label>
+                                <input type="number" step="0.01" id="stock-prod-cost" placeholder="0.00" style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; border-radius:4px; margin-top:4px;">
+                            </div>
+                            <button id="btn-save-product" class="btn-sys-modern" style="padding: 12px; background: var(--color-primary); margin-top:5px;">
+                                <span>Inserir no Inventário</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="sys-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                            <h3>Inventário em Tempo Real</h3>
-                            <div style="display:flex; gap:10px; width:60%;">
-                                <input type="text" id="stock-search" placeholder="Filtrar por nome..." style="margin-bottom:0; font-size:12px; padding:6px 10px;">
-                                <select id="stock-filter" style="margin-bottom:0; font-size:12px; padding:6px; width:150px;">
-                                    <option value="all">Ver Tudo</option>
-                                    <option value="critical">Qtd Crítica</option>
-                                    <option value="zero">Zerados</option>
-                                </select>
-                            </div>
+                    <div class="sys-box" style="padding: 20px; flex: 1;">
+                        <h3><i class="fas fa-clock-rotate-left"></i> Histórico de Auditoria</h3>
+                        <div id="stock-audit-log" style="max-height: 200px; overflow-y: auto; margin-top: 15px; font-size: 11px; display: flex; flex-direction: column; gap: 8px;">
                         </div>
-                        <div style="max-height: 440px; overflow-y: auto;">
-                            <table class="stock-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
-                                <thead>
-                                    <tr style="border-bottom: 2px solid #2e3450; color: var(--text-secondary);">
-                                        <th style="padding: 10px;">MATERIAL</th>
-                                        <th style="padding: 10px; text-align: center;">QTD</th>
-                                        <th style="padding: 10px; text-align: center;">MÍNIMO</th>
-                                        <th style="padding: 10px;">CUSTO UNIT.</th>
-                                        <th style="padding: 10px;">VALOR TOTAL</th>
-                                        <th style="padding: 10px; text-align: right;">AÇÕES</th>
-                                    </tr>
-                                </thead> 
-                                <tbody id="stock-table-body"></tbody>
-                            </table>
+                    </div>
+                </div>
+
+                <div class="sys-box" style="padding: 20px; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                        <h3><i class="fas fa-warehouse"></i> Inventário em Tempo Real</h3>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="stock-search" placeholder="Buscar material..." style="padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-color); color:#fff; border-radius: 4px; font-size: 12px; width: 180px;">
+                            <select id="stock-filter" style="padding: 8px 12px; background: var(--bg-input); border: 1px solid var(--border-color); color:#fff; border-radius: 4px; font-size: 12px;">
+                                <option value="all">Ver Todos</option>
+                                <option value="critical">Abaixo do Mínimo</option>
+                                <option value="zero">Estoque Zerado</option>
+                            </select>
                         </div>
+                    </div>
+
+                    <div style="max-height: 480px; overflow-y: auto; margin-top: 15px;">
+                        <table class="stock-table" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 12px;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #2e3450; color: var(--text-secondary);">
+                                    <th style="padding: 10px;">MATERIAL</th>
+                                    <th style="padding: 10px; text-align: center;">QTD</th>
+                                    <th style="padding: 10px; text-align: center;">MÍNIMO</th>
+                                    <th style="padding: 10px;">CUSTO UNIT.</th>
+                                    <th style="padding: 10px;">VALOR TOTAL</th>
+                                    <th style="padding: 10px; text-align: right;">AÇÕES</th>
+                                </tr>
+                            </thead> 
+                            <tbody id="stock-table-body">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </main>
@@ -294,6 +392,8 @@
     </div> 
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
