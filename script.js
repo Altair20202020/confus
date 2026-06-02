@@ -1,17 +1,8 @@
-// =========================================================================
-// 0. DIAGNOSTICADOR AUTOMÁTICO (Substitui o F12 em PCs bloqueados)
-// =========================================================================
-window.onerror = function(msg, url, line) {
-    alert("🚨 ERRO INTERNO DETECTADO:\n\n" + msg + "\n\nLinha: " + line + "\nArquivo: " + url.split('/').pop());
-    return false;
-
-};
-
 // ====== CONFIGURAÇÃO E CONEXÃO COM O BANCO DE DADOS (SUPABASE) ======
 const SUPABASE_URL = "https://cnatk9qzp-svvkdtdtir.supabase.co"; 
 const SUPABASE_ANON_KEY = "sb_publishable_CNatk9qZp-SvvkDTdTIRqQ_loozljJD"; 
 
-// Inicializa o cliente oficial do Supabase corrigindo o erro crítico de referência
+// CORREÇÃO CRÍTICA: Utiliza o escopo global 'window' para evitar o erro de auto-referência
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variáveis de Controle de Estado da Aplicação
@@ -88,14 +79,17 @@ const btnChangePasswordSubmit = document.getElementById('btn-change-password-sub
 // ================= SESSÃO E AUTENTICAÇÃO NO SUPABASE =================
 async function handleLogin() {
     try {
+        if (!usernameInput || !passwordInput) return;
+        
         const username = usernameInput.value.trim().toLowerCase();
         const password = passwordInput.value;
 
         if (!username || !password) {
-            loginError.innerText = "SISTEMA: Digite o usuário e a senha.";
+            if (loginError) loginError.innerText = "SISTEMA: Digite o usuário e a senha.";
             return;
         }
 
+        // Busca o usuário na tabela do Supabase
         const { data: user, error } = await supabase
             .from('usuarios')
             .select('*')
@@ -103,22 +97,23 @@ async function handleLogin() {
             .maybeSingle();
 
         if (error) {
-            loginError.innerText = "SISTEMA: Erro de comunicação com o SQL.";
+            if (loginError) loginError.innerText = "SISTEMA: Erro de comunicação com o Banco de Dados.";
+            console.error("Erro Supabase:", error);
             return;
         }
 
         if (!user) {
-            loginError.innerText = "ACESSO NEGADO: Usuário não localizado.";
+            if (loginError) loginError.innerText = "ACESSO NEGADO: Usuário não localizado.";
             return;
         }
 
         if (user.password !== password) {
-            loginError.innerText = "ACESSO NEGADO: Senha inválida.";
+            if (loginError) loginError.innerText = "ACESSO NEGADO: Senha inválida.";
             return;
         }
 
         if (user.is_blocked) {
-            loginError.innerText = "SISTEMA: Conta suspensa pelo administrador.";
+            if (loginError) loginError.innerText = "SISTEMA: Conta suspensa pelo administrador.";
             return;
         }
 
@@ -130,7 +125,8 @@ async function handleLogin() {
 
         logInUserSession(user);
     } catch (err) {
-        loginError.innerText = "SISTEMA: Ocorreu um erro interno de processamento.";
+        if (loginError) loginError.innerText = "SISTEMA: Ocorreu um erro interno de script.";
+        console.error("Erro catch login:", err);
     }
 }
 
@@ -139,9 +135,9 @@ function logInUserSession(user) {
     currentUserObj = user;
     sessionStorage.setItem('logged_user', user.username);
     
-    loginError.innerText = "";
-    usernameInput.value = "";
-    passwordInput.value = "";
+    if (loginError) loginError.innerText = "";
+    if (usernameInput) usernameInput.value = "";
+    if (passwordInput) passwordInput.value = "";
     
     showScreen(screenMenu);
     renderMenu();
@@ -157,12 +153,16 @@ function handleLogout() {
 
 async function checkActiveSession() {
     if (currentUser) {
-        const { data: user } = await supabase.from('usuarios').select('*').eq('username', currentUser).maybeSingle();
-        if (user && !user.is_blocked) {
-            currentUserObj = user;
-            showScreen(screenMenu);
-            renderMenu();
-            return;
+        try {
+            const { data: user } = await supabase.from('usuarios').select('*').eq('username', currentUser).maybeSingle();
+            if (user && !user.is_blocked) {
+                currentUserObj = user;
+                showScreen(screenMenu);
+                renderMenu();
+                return;
+            }
+        } catch(e) {
+            console.log("Sem sessão ativa estável.");
         }
     }
     showScreen(screenLogin);
@@ -178,7 +178,7 @@ function showScreen(screenTarget) {
 function updateHeaderUsernames() {
     if (!currentUserObj) return;
     document.querySelectorAll('.user-placeholder-name').forEach(el => {
-        el.innerText = currentUserObj.display_name;
+        el.innerText = currentUserObj.display_name || currentUserObj.username.toUpperCase();
     });
 }
 
@@ -187,9 +187,9 @@ function renderMenu() {
     const cardAdmin = document.getElementById('mod-admin');
     
     if (currentUserObj?.is_admin) {
-        cardAdmin.classList.remove('hidden');
+        if(cardAdmin) cardAdmin.classList.remove('hidden');
     } else {
-        cardAdmin.classList.add('hidden');
+        if(cardAdmin) cardAdmin.classList.add('hidden');
     }
 
     document.querySelectorAll('.module-card:not(.disabled):not(.admin-only)').forEach(card => {
@@ -204,11 +204,13 @@ function renderMenu() {
         if (badge) {
             if (hasAccess) {
                 card.style.opacity = "1";
+                card.style.pointerEvents = "auto";
                 badge.innerText = "ACESSO_LIBERADO";
                 badge.style.color = "var(--color-success)";
                 badge.style.borderColor = "var(--color-success)";
             } else {
-                card.style.opacity = "0.6";
+                card.style.opacity = "0.5";
+                card.style.pointerEvents = "none";
                 badge.innerText = "BLOQUEADO_PELO_ADMIN";
                 badge.style.color = "var(--color-danger)";
                 badge.style.borderColor = "var(--color-danger)";
@@ -273,7 +275,7 @@ if (btnChangePasswordSubmit) {
             .maybeSingle();
 
         if (!error && data) {
-            alert("Senha updated com sucesso!");
+            alert("Senha atualizada com sucesso!");
             forceNewPasswordInput.value = ""; forceConfirmPasswordInput.value = "";
             logInUserSession(data);
         } else {
@@ -294,7 +296,7 @@ async function loadAdminPanelData() {
     if (!error && adminRequestsContainer) {
         adminRequestsContainer.innerHTML = "";
         if (pendentes.length === 0) {
-            adminRequestsContainer.innerHTML = `<p style="color:var(--text-secondary); font-size:13px; padding:10px;">Nenhuma solicitação de acesso pendente no momento.</p>`;
+            adminRequestsContainer.innerHTML = `<p style="color:var(--text-secondary); font-size:13px; padding:10px;">Nenhuma solicitação de acesso pendente.</p>`;
         } else {
             pendentes.forEach(req => {
                 const card = document.createElement('div');
@@ -334,7 +336,7 @@ window.approveUser = async function(username) {
 };
 
 window.denyUser = async function(username) {
-    if (confirm(`Deseja recusar e deletar permanentemente a solicitação de ${username.toUpperCase()}?`)) {
+    if (confirm(`Deseja recusar a solicitação de ${username.toUpperCase()}?`)) {
         const { error } = await supabase.from('usuarios').delete().eq('username', username);
         if (!error) {
             loadAdminPanelData();
@@ -382,7 +384,7 @@ if (btnSavePermissions) {
             .eq('username', editingUserFromSearch);
 
         if (!error) {
-            alert("Permissões salvas e sincronizadas com sucesso no banco!");
+            alert("Permissões salvas no banco com sucesso!");
             adminUserPermissionsCard.classList.add('hidden');
             adminSearchUser.value = "";
         } else {
@@ -424,10 +426,12 @@ function renderFinancas() {
     });
 
     const bal = ent - sai;
-    totalBalance.innerText = `R$ ${bal.toFixed(2)}`;
-    totalEntries.innerText = `R$ ${ent.toFixed(2)}`;
-    totalExpenses.innerText = `R$ ${sai.toFixed(2)}`;
-    totalBalance.style.color = bal >= 0 ? "var(--color-success)" : "var(--color-danger)";
+    if(totalBalance) {
+        totalBalance.innerText = `R$ ${bal.toFixed(2)}`;
+        totalBalance.style.color = bal >= 0 ? "var(--color-success)" : "var(--color-danger)";
+    }
+    if(totalEntries) totalEntries.innerText = `R$ ${ent.toFixed(2)}`;
+    if(totalExpenses) totalExpenses.innerText = `R$ ${sai.toFixed(2)}`;
 }
 
 if (btnSaveTransaction) {
@@ -450,7 +454,7 @@ if (btnSaveTransaction) {
 
 if (btnClearFinancas) {
     btnClearFinancas.addEventListener('click', async () => {
-        if (confirm("Deseja mesmo limpar todo o histórico de transações do SQL?")) {
+        if (confirm("Deseja mesmo limpar todo o histórico?")) {
             const { error } = await supabase.from('financas').delete().neq('id', 0);
             if (!error) {
                 await loadFinancasData();
@@ -460,7 +464,7 @@ if (btnClearFinancas) {
 }
 
 
-// ================= MÓDULO ALMOXARIFADO AVANÇADO =================
+// ================= MÓDULO ALMOXARIFADO =================
 async function loadAlmoxarifadoData() {
     const resProdutos = await supabase.from('almoxarifado').select('*').order('name', { ascending: true });
     const resLogs = await supabase.from('almoxarifado_logs').select('*').order('created_at', { ascending: false }).limit(25);
@@ -532,7 +536,7 @@ function renderStockTable() {
     });
 
     if (filteredItems.length === 0) {
-        stockTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary); padding:20px;">Nenhum material localizado nos filtros.</td></tr>`;
+        stockTableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-secondary); padding:20px;">Nenhum material localizado.</td></tr>`;
         return;
     }
 
@@ -553,9 +557,9 @@ function renderStockTable() {
             <td style="padding: 10px;">R$ ${c.toFixed(2)}</td>
             <td style="padding: 10px; font-weight:bold;">R$ ${totalCost.toFixed(2)}</td>
             <td style="padding: 10px; text-align: right;">
-                <button class="btn-stock-action" onclick="changeStockQty(${item.id}, 1)" title="Entrada"><i class="fas fa-plus"></i></button>
-                <button class="btn-stock-action" onclick="changeStockQty(${item.id}, -1)" title="Baixa"><i class="fas fa-minus"></i></button>
-                <button class="btn-stock-action btn-stock-danger" style="background:#451a1a;" onclick="deleteStockItem(${item.id}, '${item.name}')" title="Remover"><i class="fas fa-trash"></i></button>
+                <button class="btn-stock-action" onclick="changeStockQty(${item.id}, 1)"><i class="fas fa-plus"></i></button>
+                <button class="btn-stock-action" onclick="changeStockQty(${item.id}, -1)"><i class="fas fa-minus"></i></button>
+                <button class="btn-stock-action btn-stock-danger" style="background:#451a1a;" onclick="deleteStockItem(${item.id}, '${item.name}')"><i class="fas fa-trash"></i></button>
             </td>
         `;
         stockTableBody.appendChild(tr);
@@ -594,7 +598,7 @@ window.changeStockQty = async function(id, amount) {
 
     let currentQty = parseInt(item.qty) || 0;
     if (amount < 0 && currentQty + amount < 0) {
-        alert('ERRO OPERACIONAL: Saldo em estoque insuficiente.');
+        alert('ERRO OPERACIONAL: Saldo insuficiente.');
         return;
     }
 
@@ -606,21 +610,22 @@ window.changeStockQty = async function(id, amount) {
         .eq('id', id);
 
     if (!error) {
-        const actionType = amount > 0 ? "Entrada" : "Saída/Baixa";
-        await addLog("movimentacao", `${actionType} de 1 unidade efetuada para o item "${item.name.toUpperCase()}". Novo saldo: ${newQty}.`);
+        const actionType = amount > 0 ? "Entrada" : "Saída";
+        await addLog("movimentacao", `${actionType} de 1 un. para "${item.name.toUpperCase()}". Novo saldo: ${newQty}.`);
         await loadAlmoxarifadoData();
     }
 };
 
 window.deleteStockItem = async function(id, name) {
-    if (confirm(`Remover "${name.toUpperCase()}" permanentemente do SQL?`)) {
+    if (confirm(`Remover "${name.toUpperCase()}" permanentemente?`)) {
         const { error } = await supabase.from('almoxarifado').delete().eq('id', id);
         if (!error) {
-            await addLog("remocao", `Removeu o item "${name.toUpperCase()}" do almoxarifado.`);
+            await addLog("remocao", `Removeu o item "${name.toUpperCase()}".`);
             await loadAlmoxarifadoData();
         }
     }
 };
+
 
 // ================= CONFIGURAÇÃO DE GATILHOS DE TELAS E CLIQUES =================
 document.querySelectorAll('.module-card').forEach(card => {
@@ -657,12 +662,17 @@ document.querySelectorAll('.btn-back').forEach(btn => {
 if (linkGoRegister) linkGoRegister.addEventListener('click', () => showScreen(screenRegister));
 if (linkBackLogin) linkBackLogin.addEventListener('click', () => showScreen(screenLogin));
 document.querySelectorAll('.btn-trigger-logout').forEach(btn => btn.addEventListener('click', handleLogout));
+
 if (btnLogin) btnLogin.addEventListener('click', handleLogin);
 
 if (stockSearchInput) stockSearchInput.addEventListener('input', renderStockTable);
 if (stockFilterSelect) stockFilterSelect.addEventListener('change', renderStockTable);
 
-passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') handleLogin(); });
+if (passwordInput) {
+    passwordInput.addEventListener('keypress', (e) => { 
+        if (e.key === 'Enter') handleLogin(); 
+    });
+}
 
-// Inicialização do estado da sessão ao carregar a página
+// Inicializa o app verificando sessões abertas no navegador
 checkActiveSession();
