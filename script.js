@@ -275,7 +275,7 @@ if (btnChangePasswordSubmit) {
             .maybeSingle();
 
         if (!error && data) {
-            alert("Senha atualizada com sucesso!");
+            alert("Senha updated com sucesso!");
             forceNewPasswordInput.value = ""; forceConfirmPasswordInput.value = "";
             logInUserSession(data);
         } else {
