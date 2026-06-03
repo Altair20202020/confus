@@ -1,6 +1,6 @@
 // ====== CONFIGURAÇÃO E CONEXÃO COM O BANCO DE DADOS (SUPABASE) ======
 const SUPABASE_URL = "https://cnatk9qzp-svvkdtdtir.supabase.co"; 
-const SUPABASE_ANON_KEY = "sb_publishable_CNatk9qZp-SvvkDTdTIRqQ_loozljJD"; 
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtdWl6aWJpZHl0a3Bwb2NneWRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMjUyNjQsImV4cCI6MjA5NTkwMTI2NH0.8S9mOZG70lGnUp8xe7poQM-7moDtlUnD76L-RyMVUrs"; 
 
 // CORREÇÃO CRÍTICA: Utiliza o escopo global 'window' para evitar o erro de auto-referência
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
